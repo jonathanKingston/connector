@@ -77,5 +77,6 @@ export function createMockPlatform(): PlatformAdapter & {
       { name: "test.txt", type: "file", size: 100, modified: "2025-01-01T00:00:00.000Z" },
       { name: "subdir", type: "directory", size: 0, modified: "2025-01-01T00:00:00.000Z" },
     ]),
+    runCommand: vi.fn().mockResolvedValue({ stdout: "hello\n", stderr: "", exitCode: 0, timedOut: false }),
   };
 }

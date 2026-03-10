@@ -19,6 +19,8 @@ import type {
   ClipboardContents,
   FileContents,
   DirectoryEntry,
+  CommandResult,
+  CommandOptions,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -28,6 +30,7 @@ import { getAccessibilityTree, getMenuBar, clickMenuItem } from "./accessibility
 import { listApplications, activateApplication, listWindows } from "./applications.js";
 import { getClipboard, setClipboard } from "./clipboard.js";
 import { readFile, writeFile, listDirectory } from "./filesystem.js";
+import { runCommand } from "./command.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
@@ -100,5 +103,7 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async listDirectory(path: string): Promise<DirectoryEntry[]> {
     return listDirectory(path);
+  async runCommand(command: string, args?: string[], options?: CommandOptions): Promise<CommandResult> {
+    return runCommand(command, args, options);
   }
 }

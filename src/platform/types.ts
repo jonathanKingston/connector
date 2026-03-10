@@ -139,6 +139,19 @@ export interface DirectoryEntry {
   type: "file" | "directory" | "symlink";
   size: number;
   modified: string; // ISO 8601
+// ── Command ────────────────────────────────────────────────────────────────
+
+export interface CommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+  timedOut: boolean;
+}
+
+export interface CommandOptions {
+  cwd?: string;
+  timeout?: number;
+  env?: Record<string, string>;
 }
 
 // ── Platform Adapter ────────────────────────────────────────────────────────
@@ -177,4 +190,6 @@ export interface PlatformAdapter {
   readFile(path: string, encoding?: "utf-8" | "base64"): Promise<FileContents>;
   writeFile(path: string, content: string, encoding?: "utf-8" | "base64"): Promise<void>;
   listDirectory(path: string): Promise<DirectoryEntry[]>;
+  // Command
+  runCommand(command: string, args?: string[], options?: CommandOptions): Promise<CommandResult>;
 }
