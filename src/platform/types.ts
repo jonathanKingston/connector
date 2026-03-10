@@ -207,6 +207,21 @@ export interface OcrOptions {
   displayId?: number;
   region?: { x: number; y: number; width: number; height: number };
   languages?: string[]; // e.g. ["en-US"]
+// ── System ─────────────────────────────────────────────────────────────────
+
+export interface SystemInfo {
+  os: string;
+  osVersion: string;
+  hostname: string;
+  username: string;
+  uptime: number; // seconds
+  screenResolution: { width: number; height: number };
+  isScreenLocked: boolean;
+  batteryState?: {
+    level: number; // 0-100
+    isCharging: boolean;
+    isPluggedIn: boolean;
+  };
 }
 
 // ── Platform Adapter ────────────────────────────────────────────────────────
@@ -262,4 +277,7 @@ export interface PlatformAdapter {
   waitForWindow(options: WaitForWindowOptions): Promise<WindowInfo | null>;
   // OCR
   extractText(options?: OcrOptions): Promise<OcrResult[]>;
+  // System
+  getSystemInfo(): Promise<SystemInfo>;
+  healthCheck(): Promise<{ status: "ok"; timestamp: string; latencyMs: number }>;
 }

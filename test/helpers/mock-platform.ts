@@ -112,5 +112,20 @@ export function createMockPlatform(): PlatformAdapter & {
     extractText: vi.fn().mockResolvedValue([
       { text: "Hello World", confidence: 0.98, bounds: { x: 100, y: 200, width: 200, height: 30 } },
     ]),
+    getSystemInfo: vi.fn().mockResolvedValue({
+      os: "macOS",
+      osVersion: "15.0",
+      hostname: "test-mac",
+      username: "testuser",
+      uptime: 86400,
+      screenResolution: { width: 3840, height: 2160 },
+      isScreenLocked: false,
+      batteryState: { level: 85, isCharging: false, isPluggedIn: true },
+    }),
+    healthCheck: vi.fn().mockResolvedValue({
+      status: "ok",
+      timestamp: "2025-01-01T00:00:00.000Z",
+      latencyMs: 42,
+    }),
   };
 }
