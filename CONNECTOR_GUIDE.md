@@ -45,14 +45,14 @@ Prefer keyboard shortcuts over mouse clicks when possible — they are more reli
 
 ### Mouse Coordinates
 
-- The screen resolution may be high (e.g. 3840x2160 on Retina displays). Coordinates from `list_windows` bounds are in screen points, which match the coordinate system for mouse tools.
-- When clicking UI elements, use `list_windows` bounds or `get_accessibility_tree` positions to find accurate coordinates rather than guessing from screenshots.
+- **Retina displays return screenshots at 2× resolution** (e.g. 3840×2160 pixels for a 1920×1080 screen point space). All mouse tools use **screen points**, not screenshot pixels. If you estimate a position from a screenshot, **divide the pixel coordinates by 2** to get the correct screen point. Prefer using `list_windows` bounds or `get_accessibility_tree` positions instead — these already use screen points.
+- **Beware of overlapping windows.** Even after calling `activate_application`, if you click coordinates where another window visually overlaps the target app, the click may land on the wrong window. Either move/resize windows first, or use keyboard shortcuts to avoid coordinate issues entirely.
 
 ### Application Interaction
 
 - **`activate_application`** must be called before interacting with an app that isn't in the foreground. Keyboard and mouse input goes to the frontmost app.
 - You can target apps by **name** (e.g. "Safari") or **bundle ID** (e.g. "com.apple.Safari").
-- **`click_menu_item`** is the most reliable way to trigger app actions — more reliable than keyboard shortcuts or mouse clicks on toolbar buttons. Use `get_menu_bar` first to discover available items.
+- **`click_menu_item`** is the most reliable way to trigger app actions — more reliable than keyboard shortcuts or mouse clicks on toolbar buttons. Use `get_menu_bar` first to discover available items. Note that `get_menu_bar` can return very large responses (50KB+ for complex apps like Safari) — only call it when you need to discover menu structure.
 
 ### Accessibility Tree
 
@@ -76,6 +76,15 @@ Prefer keyboard shortcuts over mouse clicks when possible — they are more reli
 1. Get the PID from `list_applications`
 2. `get_menu_bar(pid)` to discover menu structure
 3. `click_menu_item(pid, ["Menu", "Submenu", "Item"])`
+
+**Selecting text with double/triple click:**
+- `mouse_click(x, y, clickCount: 2)` — double-click to select a word
+- `mouse_click(x, y, clickCount: 3)` — triple-click to select a paragraph/line
+
+**Right-clicking for context menus:**
+1. `mouse_click(x, y, button: "right")` — open context menu
+2. Use `screenshot` to read the menu options
+3. `mouse_click(x, y)` on the desired option, or `keyboard_key("escape")` to dismiss
 
 ### Performance
 
