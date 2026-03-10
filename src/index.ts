@@ -2,7 +2,7 @@
  * Connector MCP Server — entry point.
  *
  * Sets up Express with:
- * - Auth middleware (Bearer token password authentication)
+ * - Optional auth middleware (Bearer token, enabled via CONNECTOR_PASSWORD)
  * - Streamable HTTP transport for MCP protocol
  * - Session management for persistent connections
  */
@@ -18,7 +18,7 @@ import { createConnectorServer } from "./server.js";
 import { PasswordAuthProvider } from "./auth/password.js";
 import type { AuthProvider } from "./auth/types.js";
 
-// ── Load configuration (fails fast on missing required values) ──────────
+// ── Load configuration ──────────────────────────────────────────────────
 
 const config = loadConfig();
 
@@ -53,17 +53,29 @@ function createAuthMiddleware(authProvider: AuthProvider) {
 
 async function main(): Promise<void> {
   const { mcpServer } = await createConnectorServer();
-  const authProvider = new PasswordAuthProvider(config.password);
-  const authMiddleware = createAuthMiddleware(authProvider);
 
   const app = createMcpExpressApp({ host: config.host });
 
   // Session management: map session IDs to their transports
   const transports: Record<string, StreamableHTTPServerTransport> = {};
 
+  // ── Apply auth middleware to /mcp if password is configured ──────────
+
+  if (config.password) {
+    const authMiddleware = createAuthMiddleware(
+      new PasswordAuthProvider(config.password),
+    );
+    app.use("/mcp", authMiddleware);
+  } else {
+    console.warn(
+      "WARNING: No CONNECTOR_PASSWORD set — server is running WITHOUT authentication. " +
+        "Set CONNECTOR_PASSWORD to require Bearer token auth.",
+    );
+  }
+
   // ── POST /mcp — main MCP request handler ────────────────────────────
 
-  app.post("/mcp", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  app.post("/mcp", async (req: Request, res: Response): Promise<void> => {
     try {
       const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
@@ -120,7 +132,7 @@ async function main(): Promise<void> {
 
   // ── GET /mcp — SSE stream for server-to-client notifications ────────
 
-  app.get("/mcp", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  app.get("/mcp", async (req: Request, res: Response): Promise<void> => {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
     if (!sessionId || !transports[sessionId]) {
       res.status(400).json({
@@ -138,7 +150,7 @@ async function main(): Promise<void> {
 
   // ── DELETE /mcp — session termination ───────────────────────────────
 
-  app.delete("/mcp", authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  app.delete("/mcp", async (req: Request, res: Response): Promise<void> => {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
     if (!sessionId || !transports[sessionId]) {
       res.status(400).json({
@@ -188,6 +200,11 @@ async function main(): Promise<void> {
     console.log(
       `Connector MCP server listening on http://${config.host}:${config.port}/mcp`,
     );
+    if (config.password) {
+      console.log("Authentication: Bearer token required");
+    } else {
+      console.log("Authentication: DISABLED (no CONNECTOR_PASSWORD set)");
+    }
   });
 
   // ── Graceful shutdown ───────────────────────────────────────────────
