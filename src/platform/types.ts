@@ -104,6 +104,14 @@ export interface MenuItem {
   children: MenuItem[];
 }
 
+// ── Clipboard ──────────────────────────────────────────────────────────────
+
+export interface ClipboardContents {
+  text: string | null;
+  hasImage: boolean;
+  imageData: string | null; // base64 PNG if hasImage
+}
+
 // ── Platform Adapter ────────────────────────────────────────────────────────
 
 export interface PlatformAdapter {
@@ -130,4 +138,8 @@ export interface PlatformAdapter {
   getAccessibilityTree(pid: number, maxDepth?: number): Promise<UIElement>;
   getMenuBar(pid: number): Promise<MenuBarItem[]>;
   clickMenuItem(pid: number, menuPath: string[]): Promise<void>;
+
+  // Clipboard
+  getClipboard(): Promise<ClipboardContents>;
+  setClipboard(contents: ClipboardContents): Promise<void>;
 }

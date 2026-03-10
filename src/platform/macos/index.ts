@@ -14,6 +14,7 @@ import type {
   WindowInfo,
   UIElement,
   MenuBarItem,
+  ClipboardContents,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -21,6 +22,7 @@ import { mouseClick, mouseMove, mouseDrag } from "./mouse.js";
 import { keyboardType, keyboardKey } from "./keyboard.js";
 import { getAccessibilityTree, getMenuBar, clickMenuItem } from "./accessibility.js";
 import { listApplications, activateApplication, listWindows } from "./applications.js";
+import { getClipboard, setClipboard } from "./clipboard.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number): Promise<ScreenshotResult> {
@@ -69,5 +71,13 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async clickMenuItem(pid: number, menuPath: string[]): Promise<void> {
     return clickMenuItem(pid, menuPath);
+  }
+
+  async getClipboard(): Promise<ClipboardContents> {
+    return getClipboard();
+  }
+
+  async setClipboard(contents: ClipboardContents): Promise<void> {
+    return setClipboard(contents);
   }
 }

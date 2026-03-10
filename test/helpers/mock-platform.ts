@@ -68,5 +68,7 @@ export function createMockPlatform(): PlatformAdapter & {
       },
     ]),
     clickMenuItem: vi.fn().mockResolvedValue(undefined),
+    getClipboard: vi.fn().mockResolvedValue({ text: "mock clipboard text", hasImage: false, imageData: null }),
+    setClipboard: vi.fn().mockResolvedValue(undefined),
   };
 }
