@@ -17,6 +17,8 @@ import type {
   UIElement,
   MenuBarItem,
   ClipboardContents,
+  FileContents,
+  DirectoryEntry,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -25,6 +27,7 @@ import { keyboardType, keyboardKey } from "./keyboard.js";
 import { getAccessibilityTree, getMenuBar, clickMenuItem } from "./accessibility.js";
 import { listApplications, activateApplication, listWindows } from "./applications.js";
 import { getClipboard, setClipboard } from "./clipboard.js";
+import { readFile, writeFile, listDirectory } from "./filesystem.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
@@ -85,5 +88,17 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async setClipboard(contents: ClipboardContents): Promise<void> {
     return setClipboard(contents);
+  }
+
+  async readFile(path: string, encoding?: "utf-8" | "base64"): Promise<FileContents> {
+    return readFile(path, encoding);
+  }
+
+  async writeFile(path: string, content: string, encoding?: "utf-8" | "base64"): Promise<void> {
+    return writeFile(path, content, encoding);
+  }
+
+  async listDirectory(path: string): Promise<DirectoryEntry[]> {
+    return listDirectory(path);
   }
 }

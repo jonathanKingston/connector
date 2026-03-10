@@ -71,5 +71,11 @@ export function createMockPlatform(): PlatformAdapter & {
     clickMenuItem: vi.fn().mockResolvedValue(undefined),
     getClipboard: vi.fn().mockResolvedValue({ text: "mock clipboard text", hasImage: false, imageData: null }),
     setClipboard: vi.fn().mockResolvedValue(undefined),
+    readFile: vi.fn().mockResolvedValue({ content: "file content", encoding: "utf-8", size: 12 }),
+    writeFile: vi.fn().mockResolvedValue(undefined),
+    listDirectory: vi.fn().mockResolvedValue([
+      { name: "test.txt", type: "file", size: 100, modified: "2025-01-01T00:00:00.000Z" },
+      { name: "subdir", type: "directory", size: 0, modified: "2025-01-01T00:00:00.000Z" },
+    ]),
   };
 }

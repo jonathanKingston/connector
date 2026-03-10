@@ -126,6 +126,21 @@ export interface ClipboardContents {
   imageData: string | null; // base64 PNG if hasImage
 }
 
+// ── File System ────────────────────────────────────────────────────────────
+
+export interface FileContents {
+  content: string;
+  encoding: string;
+  size: number;
+}
+
+export interface DirectoryEntry {
+  name: string;
+  type: "file" | "directory" | "symlink";
+  size: number;
+  modified: string; // ISO 8601
+}
+
 // ── Platform Adapter ────────────────────────────────────────────────────────
 
 export interface PlatformAdapter {
@@ -157,4 +172,9 @@ export interface PlatformAdapter {
   // Clipboard
   getClipboard(): Promise<ClipboardContents>;
   setClipboard(contents: ClipboardContents): Promise<void>;
+
+  // File System
+  readFile(path: string, encoding?: "utf-8" | "base64"): Promise<FileContents>;
+  writeFile(path: string, content: string, encoding?: "utf-8" | "base64"): Promise<void>;
+  listDirectory(path: string): Promise<DirectoryEntry[]>;
 }
