@@ -97,4 +97,27 @@ export function registerMouseTools(
       };
     },
   );
+
+  // ── mouse_scroll ────────────────────────────────────────────────────────
+  server.tool(
+    "mouse_scroll",
+    "Scroll the mouse wheel at the given screen coordinates. Use deltaY for vertical scrolling (positive = down, negative = up) and deltaX for horizontal scrolling (positive = right, negative = left).",
+    {
+      x: z.number().describe("X coordinate to scroll at"),
+      y: z.number().describe("Y coordinate to scroll at"),
+      deltaX: z.number().default(0).describe("Horizontal scroll delta (positive = right)"),
+      deltaY: z.number().default(0).describe("Vertical scroll delta (positive = down)"),
+    },
+    async ({ x, y, deltaX, deltaY }) => {
+      await platform.mouseScroll({ x, y, deltaX, deltaY });
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Scrolled at (${x}, ${y}) — deltaX: ${deltaX}, deltaY: ${deltaY}`,
+          },
+        ],
+      };
+    },
+  );
 }

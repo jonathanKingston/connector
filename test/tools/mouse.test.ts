@@ -88,4 +88,57 @@ describe("mouse tools", () => {
       expect(text).toContain("100");
     });
   });
+
+  describe("mouse_scroll", () => {
+    it("is listed in available tools", async () => {
+      const { tools } = await ctx.client.listTools();
+      expect(tools.find((t) => t.name === "mouse_scroll")).toBeDefined();
+    });
+
+    it("scrolls vertically with deltaY only", async () => {
+      const result = await ctx.client.callTool({
+        name: "mouse_scroll",
+        arguments: { x: 500, y: 300, deltaY: 5 },
+      });
+
+      expect(platform.mouseScroll).toHaveBeenCalledWith({
+        x: 500,
+        y: 300,
+        deltaX: 0,
+        deltaY: 5,
+      });
+
+      const text = (result.content as Array<{ type: string; text: string }>)[0].text;
+      expect(text).toContain("500");
+      expect(text).toContain("300");
+    });
+
+    it("scrolls horizontally with deltaX only", async () => {
+      await ctx.client.callTool({
+        name: "mouse_scroll",
+        arguments: { x: 200, y: 150, deltaX: -3 },
+      });
+
+      expect(platform.mouseScroll).toHaveBeenCalledWith({
+        x: 200,
+        y: 150,
+        deltaX: -3,
+        deltaY: 0,
+      });
+    });
+
+    it("passes all params to platform", async () => {
+      await ctx.client.callTool({
+        name: "mouse_scroll",
+        arguments: { x: 100, y: 200, deltaX: 2, deltaY: -4 },
+      });
+
+      expect(platform.mouseScroll).toHaveBeenCalledWith({
+        x: 100,
+        y: 200,
+        deltaX: 2,
+        deltaY: -4,
+      });
+    });
+  });
 });

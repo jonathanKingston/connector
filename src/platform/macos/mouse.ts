@@ -6,7 +6,7 @@
  */
 
 import { exec } from "../../helpers/exec.js";
-import type { MouseClickOptions, MouseMoveOptions, MouseDragOptions } from "../types.js";
+import type { MouseClickOptions, MouseMoveOptions, MouseDragOptions, MouseScrollOptions } from "../types.js";
 
 /**
  * Run a JXA script via osascript.
@@ -102,6 +102,21 @@ $.CGEventPost($.kCGHIDEventTap, drag);
 
 var up = $.CGEventCreateMouseEvent($(), ${bp.upType}, endPoint, ${bp.mouseButton});
 $.CGEventPost($.kCGHIDEventTap, up);
+`;
+
+  await runJxa(script);
+}
+
+export async function mouseScroll(options: MouseScrollOptions): Promise<void> {
+  const { x, y, deltaX, deltaY } = options;
+
+  const script = `
+ObjC.import('CoreGraphics');
+var point = {x: ${x}, y: ${y}};
+var move = $.CGEventCreateMouseEvent($(), 5, point, 0);
+$.CGEventPost($.kCGHIDEventTap, move);
+var scroll = $.CGEventCreateScrollWheelEvent($(), 0, 2, ${-deltaY}, ${-deltaX});
+$.CGEventPost($.kCGHIDEventTap, scroll);
 `;
 
   await runJxa(script);

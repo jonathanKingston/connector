@@ -42,6 +42,13 @@ export interface MouseDragOptions {
   button: MouseButton;
 }
 
+export interface MouseScrollOptions {
+  x: number;
+  y: number;
+  deltaX: number; // horizontal scroll (positive = right)
+  deltaY: number; // vertical scroll (positive = down)
+}
+
 // ── Keyboard ────────────────────────────────────────────────────────────────
 
 export type KeyModifier = "command" | "control" | "option" | "shift" | "fn";
@@ -122,6 +129,7 @@ export interface PlatformAdapter {
   mouseClick(options: MouseClickOptions): Promise<void>;
   mouseMove(options: MouseMoveOptions): Promise<void>;
   mouseDrag(options: MouseDragOptions): Promise<void>;
+  mouseScroll(options: MouseScrollOptions): Promise<void>;
 
   // Keyboard
   keyboardType(options: KeyboardTypeOptions): Promise<void>;

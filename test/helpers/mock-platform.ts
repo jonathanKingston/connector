@@ -19,6 +19,7 @@ export function createMockPlatform(): PlatformAdapter & {
     mouseClick: vi.fn().mockResolvedValue(undefined),
     mouseMove: vi.fn().mockResolvedValue(undefined),
     mouseDrag: vi.fn().mockResolvedValue(undefined),
+    mouseScroll: vi.fn().mockResolvedValue(undefined),
     keyboardType: vi.fn().mockResolvedValue(undefined),
     keyboardKey: vi.fn().mockResolvedValue(undefined),
     listApplications: vi.fn().mockResolvedValue([

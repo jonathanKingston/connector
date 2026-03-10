@@ -8,6 +8,7 @@ import type {
   MouseClickOptions,
   MouseMoveOptions,
   MouseDragOptions,
+  MouseScrollOptions,
   KeyboardTypeOptions,
   KeyboardKeyOptions,
   AppInfo,
@@ -18,7 +19,7 @@ import type {
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
-import { mouseClick, mouseMove, mouseDrag } from "./mouse.js";
+import { mouseClick, mouseMove, mouseDrag, mouseScroll } from "./mouse.js";
 import { keyboardType, keyboardKey } from "./keyboard.js";
 import { getAccessibilityTree, getMenuBar, clickMenuItem } from "./accessibility.js";
 import { listApplications, activateApplication, listWindows } from "./applications.js";
@@ -39,6 +40,10 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async mouseDrag(options: MouseDragOptions): Promise<void> {
     return mouseDrag(options);
+  }
+
+  async mouseScroll(options: MouseScrollOptions): Promise<void> {
+    return mouseScroll(options);
   }
 
   async keyboardType(options: KeyboardTypeOptions): Promise<void> {
