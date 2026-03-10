@@ -141,6 +141,8 @@ export interface DirectoryEntry {
   type: "file" | "directory" | "symlink";
   size: number;
   modified: string; // ISO 8601
+}
+
 // ── Command ────────────────────────────────────────────────────────────────
 
 export interface CommandResult {
@@ -154,6 +156,8 @@ export interface CommandOptions {
   cwd?: string;
   timeout?: number;
   env?: Record<string, string>;
+}
+
 // ── Alerts & Notifications ─────────────────────────────────────────────────
 
 export interface AlertInfo {
@@ -169,6 +173,8 @@ export interface NotificationInfo {
   title: string;
   message: string;
   timestamp: string; // ISO 8601
+}
+
 // ── Wait/Poll ──────────────────────────────────────────────────────────────
 
 export interface WaitForElementOptions {
@@ -184,6 +190,8 @@ export interface WaitForWindowOptions {
   titleContains: string;
   timeout?: number;  // ms, default 10000
   interval?: number; // ms, default 500
+}
+
 // ── Display ────────────────────────────────────────────────────────────────
 
 export interface DisplayInfo {
@@ -195,6 +203,8 @@ export interface DisplayInfo {
   scaleFactor: number;  // e.g. 2 for Retina
   position: { x: number; y: number };
   isMain: boolean;
+}
+
 // ── OCR ────────────────────────────────────────────────────────────────────
 
 export interface OcrResult {
@@ -207,6 +217,8 @@ export interface OcrOptions {
   displayId?: number;
   region?: { x: number; y: number; width: number; height: number };
   languages?: string[]; // e.g. ["en-US"]
+}
+
 // ── System ─────────────────────────────────────────────────────────────────
 
 export interface SystemInfo {

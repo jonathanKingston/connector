@@ -42,21 +42,13 @@ import { runCommand } from "./command.js";
 import { moveWindow, resizeWindow, minimizeWindow, setFullscreen } from "./window.js";
 import { getAlerts, getNotifications } from "./alerts.js";
 import { waitForElement, waitForWindow } from "./wait.js";
+import { listDisplays } from "./display.js";
 import { extractText } from "./ocr.js";
 import { getSystemInfo, healthCheck } from "./system.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
     return captureScreen(displayId, region);
-import { listDisplays } from "./display.js";
-
-export class MacOSAdapter implements PlatformAdapter {
-  async listDisplays(): Promise<DisplayInfo[]> {
-    return listDisplays();
-  }
-
-  async captureScreen(displayId?: number): Promise<ScreenshotResult> {
-    return captureScreen(displayId);
   }
 
   async mouseClick(options: MouseClickOptions): Promise<void> {
@@ -141,22 +133,36 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async listDirectory(path: string): Promise<DirectoryEntry[]> {
     return listDirectory(path);
+  }
+
   async runCommand(command: string, args?: string[], options?: CommandOptions): Promise<CommandResult> {
     return runCommand(command, args, options);
+  }
+
   async getAlerts(): Promise<AlertInfo[]> {
     return getAlerts();
   }
 
   async getNotifications(): Promise<NotificationInfo[]> {
     return getNotifications();
+  }
+
   async waitForElement(options: WaitForElementOptions): Promise<UIElement | null> {
     return waitForElement(this, options);
   }
 
   async waitForWindow(options: WaitForWindowOptions): Promise<WindowInfo | null> {
     return waitForWindow(this, options);
+  }
+
+  async listDisplays(): Promise<DisplayInfo[]> {
+    return listDisplays();
+  }
+
   async extractText(options?: OcrOptions): Promise<OcrResult[]> {
     return extractText(options);
+  }
+
   async getSystemInfo(): Promise<SystemInfo> {
     return getSystemInfo();
   }
