@@ -31,11 +31,14 @@ function createAuthMiddleware(authProvider: AuthProvider) {
     });
 
     if (!authenticated) {
-      res.status(401).json({
+      // Use 403 (Forbidden), NOT 401. In the MCP spec, 401 means "start OAuth flow"
+      // which causes clients like Cursor to attempt OAuth discovery/registration.
+      // 403 means "your credentials are wrong" without triggering OAuth.
+      res.status(403).json({
         jsonrpc: "2.0",
         error: {
           code: -32000,
-          message: "Unauthorized",
+          message: "Forbidden: invalid or missing Bearer token",
         },
         id: null,
       });
@@ -163,6 +166,20 @@ async function main(): Promise<void> {
         });
       }
     }
+  });
+
+  // ── Catch-all: return JSON 404 for unknown routes ────────────────────
+  // Express returns HTML 404s by default, which breaks MCP clients that
+  // expect JSON (e.g. Cursor's OAuth discovery probes to /register).
+  app.use((_req: Request, res: Response) => {
+    res.status(404).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Not Found",
+      },
+      id: null,
+    });
   });
 
   // ── Start listening ─────────────────────────────────────────────────
