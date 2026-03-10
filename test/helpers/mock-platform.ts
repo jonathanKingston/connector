@@ -109,6 +109,8 @@ export function createMockPlatform(): PlatformAdapter & {
     }),
     listDisplays: vi.fn().mockResolvedValue([
       { id: 1, width: 1920, height: 1080, pixelWidth: 3840, pixelHeight: 2160, scaleFactor: 2, position: { x: 0, y: 0 }, isMain: true },
+    extractText: vi.fn().mockResolvedValue([
+      { text: "Hello World", confidence: 0.98, bounds: { x: 100, y: 200, width: 200, height: 30 } },
     ]),
   };
 }

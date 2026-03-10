@@ -17,6 +17,7 @@ import { registerWindowTools } from "./window.js";
 import { registerAlertTools } from "./alerts.js";
 import { registerWaitTools } from "./wait.js";
 import { registerDisplayTools } from "./display.js";
+import { registerOcrTools } from "./ocr.js";
 
 /**
  * Register all Connector tools on the given MCP server.
@@ -38,4 +39,5 @@ export function registerTools(
   registerAlertTools(server, platform);
   registerWaitTools(server, platform);
   registerDisplayTools(server, platform);
+  registerOcrTools(server, platform);
 }

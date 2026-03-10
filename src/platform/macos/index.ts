@@ -26,6 +26,8 @@ import type {
   WaitForElementOptions,
   WaitForWindowOptions,
   DisplayInfo,
+  OcrResult,
+  OcrOptions,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -39,6 +41,7 @@ import { runCommand } from "./command.js";
 import { moveWindow, resizeWindow, minimizeWindow, setFullscreen } from "./window.js";
 import { getAlerts, getNotifications } from "./alerts.js";
 import { waitForElement, waitForWindow } from "./wait.js";
+import { extractText } from "./ocr.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
@@ -150,5 +153,7 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async waitForWindow(options: WaitForWindowOptions): Promise<WindowInfo | null> {
     return waitForWindow(this, options);
+  async extractText(options?: OcrOptions): Promise<OcrResult[]> {
+    return extractText(options);
   }
 }

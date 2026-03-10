@@ -193,6 +193,18 @@ export interface DisplayInfo {
   scaleFactor: number;  // e.g. 2 for Retina
   position: { x: number; y: number };
   isMain: boolean;
+// ── OCR ────────────────────────────────────────────────────────────────────
+
+export interface OcrResult {
+  text: string;
+  confidence: number;
+  bounds: { x: number; y: number; width: number; height: number };
+}
+
+export interface OcrOptions {
+  displayId?: number;
+  region?: { x: number; y: number; width: number; height: number };
+  languages?: string[]; // e.g. ["en-US"]
 }
 
 // ── Platform Adapter ────────────────────────────────────────────────────────
@@ -246,4 +258,6 @@ export interface PlatformAdapter {
   // Wait/Poll
   waitForElement(options: WaitForElementOptions): Promise<UIElement | null>;
   waitForWindow(options: WaitForWindowOptions): Promise<WindowInfo | null>;
+  // OCR
+  extractText(options?: OcrOptions): Promise<OcrResult[]>;
 }
