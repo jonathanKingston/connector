@@ -182,11 +182,25 @@ export interface WaitForWindowOptions {
   titleContains: string;
   timeout?: number;  // ms, default 10000
   interval?: number; // ms, default 500
+// ── Display ────────────────────────────────────────────────────────────────
+
+export interface DisplayInfo {
+  id: number;
+  width: number;        // points
+  height: number;       // points
+  pixelWidth: number;   // actual pixels (retina)
+  pixelHeight: number;
+  scaleFactor: number;  // e.g. 2 for Retina
+  position: { x: number; y: number };
+  isMain: boolean;
 }
 
 // ── Platform Adapter ────────────────────────────────────────────────────────
 
 export interface PlatformAdapter {
+  // Display
+  listDisplays(): Promise<DisplayInfo[]>;
+
   // Screen
   captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult>;
 

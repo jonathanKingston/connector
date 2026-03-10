@@ -107,5 +107,8 @@ export function createMockPlatform(): PlatformAdapter & {
       isMinimized: false,
       isFullscreen: false,
     }),
+    listDisplays: vi.fn().mockResolvedValue([
+      { id: 1, width: 1920, height: 1080, pixelWidth: 3840, pixelHeight: 2160, scaleFactor: 2, position: { x: 0, y: 0 }, isMain: true },
+    ]),
   };
 }

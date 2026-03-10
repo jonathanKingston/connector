@@ -25,6 +25,7 @@ import type {
   NotificationInfo,
   WaitForElementOptions,
   WaitForWindowOptions,
+  DisplayInfo,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -42,6 +43,15 @@ import { waitForElement, waitForWindow } from "./wait.js";
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
     return captureScreen(displayId, region);
+import { listDisplays } from "./display.js";
+
+export class MacOSAdapter implements PlatformAdapter {
+  async listDisplays(): Promise<DisplayInfo[]> {
+    return listDisplays();
+  }
+
+  async captureScreen(displayId?: number): Promise<ScreenshotResult> {
+    return captureScreen(displayId);
   }
 
   async mouseClick(options: MouseClickOptions): Promise<void> {
