@@ -4,6 +4,7 @@
 
 import type {
   PlatformAdapter,
+  ScreenRegion,
   ScreenshotResult,
   MouseClickOptions,
   MouseMoveOptions,
@@ -26,8 +27,8 @@ import { listApplications, activateApplication, listWindows } from "./applicatio
 import { getClipboard, setClipboard } from "./clipboard.js";
 
 export class MacOSAdapter implements PlatformAdapter {
-  async captureScreen(displayId?: number): Promise<ScreenshotResult> {
-    return captureScreen(displayId);
+  async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
+    return captureScreen(displayId, region);
   }
 
   async mouseClick(options: MouseClickOptions): Promise<void> {

@@ -7,6 +7,13 @@
 
 // ── Screen ──────────────────────────────────────────────────────────────────
 
+export interface ScreenRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ScreenshotResult {
   /** Base64-encoded image data */
   data: string;
@@ -123,7 +130,7 @@ export interface ClipboardContents {
 
 export interface PlatformAdapter {
   // Screen
-  captureScreen(displayId?: number): Promise<ScreenshotResult>;
+  captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult>;
 
   // Mouse
   mouseClick(options: MouseClickOptions): Promise<void>;

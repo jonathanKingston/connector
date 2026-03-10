@@ -12,14 +12,21 @@ export function registerScreenshotTool(
 ): void {
   server.tool(
     "screenshot",
-    "Capture a screenshot of the screen. Returns a PNG image. Optionally specify a display ID for multi-monitor setups.",
+    "Capture a screenshot of the screen. Returns a PNG image. Optionally specify a display ID for multi-monitor setups. Optionally specify a region to capture only part of the screen.",
     {
       displayId: z.number().int().positive().optional().describe(
         "Display ID to capture. Omit for the main display.",
       ),
+      regionX: z.number().optional().describe("X coordinate of region to capture"),
+      regionY: z.number().optional().describe("Y coordinate of region to capture"),
+      regionWidth: z.number().optional().describe("Width of region to capture"),
+      regionHeight: z.number().optional().describe("Height of region to capture"),
     },
-    async ({ displayId }) => {
-      const result = await platform.captureScreen(displayId);
+    async ({ displayId, regionX, regionY, regionWidth, regionHeight }) => {
+      const region = (regionX !== undefined && regionY !== undefined && regionWidth !== undefined && regionHeight !== undefined)
+        ? { x: regionX, y: regionY, width: regionWidth, height: regionHeight }
+        : undefined;
+      const result = await platform.captureScreen(displayId, region);
       return {
         content: [
           {

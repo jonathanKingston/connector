@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { exec } from "../../helpers/exec.js";
-import type { ScreenshotResult } from "../types.js";
+import type { ScreenRegion, ScreenshotResult } from "../types.js";
 
 /**
  * Parse width and height from a PNG file header.
@@ -24,11 +24,15 @@ function parsePngDimensions(buffer: Buffer): { width: number; height: number } {
   return { width, height };
 }
 
-export async function captureScreen(displayId?: number): Promise<ScreenshotResult> {
+export async function captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
   const tempPath = join(tmpdir(), `connector-screenshot-${randomUUID()}.png`);
 
   try {
     const args = ["-x", "-t", "png"];
+
+    if (region) {
+      args.push("-R", `${region.x},${region.y},${region.width},${region.height}`);
+    }
 
     if (displayId !== undefined) {
       args.push("-D", String(displayId));

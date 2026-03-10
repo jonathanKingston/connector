@@ -32,7 +32,7 @@ describe("screenshot tool", () => {
     expect(imageContent!.mimeType).toBe("image/png");
     expect(imageContent!.data).toBeTruthy();
 
-    expect(platform.captureScreen).toHaveBeenCalledWith(undefined);
+    expect(platform.captureScreen).toHaveBeenCalledWith(undefined, undefined);
   });
 
   it("passes displayId to platform adapter", async () => {
@@ -40,6 +40,27 @@ describe("screenshot tool", () => {
       name: "screenshot",
       arguments: { displayId: 2 },
     });
-    expect(platform.captureScreen).toHaveBeenCalledWith(2);
+    expect(platform.captureScreen).toHaveBeenCalledWith(2, undefined);
+  });
+
+  it("passes region to platform adapter when all region params provided", async () => {
+    await ctx.client.callTool({
+      name: "screenshot",
+      arguments: { regionX: 100, regionY: 200, regionWidth: 300, regionHeight: 400 },
+    });
+    expect(platform.captureScreen).toHaveBeenCalledWith(undefined, {
+      x: 100,
+      y: 200,
+      width: 300,
+      height: 400,
+    });
+  });
+
+  it("does not pass region when region params are missing", async () => {
+    await ctx.client.callTool({
+      name: "screenshot",
+      arguments: { regionX: 100, regionY: 200 },
+    });
+    expect(platform.captureScreen).toHaveBeenCalledWith(undefined, undefined);
   });
 });
