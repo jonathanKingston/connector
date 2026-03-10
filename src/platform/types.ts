@@ -152,6 +152,21 @@ export interface CommandOptions {
   cwd?: string;
   timeout?: number;
   env?: Record<string, string>;
+// ── Alerts & Notifications ─────────────────────────────────────────────────
+
+export interface AlertInfo {
+  appName: string;
+  appPid: number;
+  title: string;
+  message: string;
+  buttons: string[];
+}
+
+export interface NotificationInfo {
+  appName: string;
+  title: string;
+  message: string;
+  timestamp: string; // ISO 8601
 }
 
 // ── Platform Adapter ────────────────────────────────────────────────────────
@@ -196,4 +211,7 @@ export interface PlatformAdapter {
   listDirectory(path: string): Promise<DirectoryEntry[]>;
   // Command
   runCommand(command: string, args?: string[], options?: CommandOptions): Promise<CommandResult>;
+  // Alerts & Notifications
+  getAlerts(): Promise<AlertInfo[]>;
+  getNotifications(): Promise<NotificationInfo[]>;
 }

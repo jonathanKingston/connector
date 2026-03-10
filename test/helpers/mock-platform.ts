@@ -82,5 +82,11 @@ export function createMockPlatform(): PlatformAdapter & {
     resizeWindow: vi.fn().mockResolvedValue(undefined),
     minimizeWindow: vi.fn().mockResolvedValue(undefined),
     setFullscreen: vi.fn().mockResolvedValue(undefined),
+    getAlerts: vi.fn().mockResolvedValue([
+      { appName: "Safari", appPid: 1234, title: "Save Changes?", message: "Do you want to save?", buttons: ["Save", "Don't Save", "Cancel"] },
+    ]),
+    getNotifications: vi.fn().mockResolvedValue([
+      { appName: "Mail", title: "New Message", message: "You have a new email", timestamp: "2025-01-01T00:00:00.000Z" },
+    ]),
   };
 }

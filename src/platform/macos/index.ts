@@ -21,6 +21,8 @@ import type {
   DirectoryEntry,
   CommandResult,
   CommandOptions,
+  AlertInfo,
+  NotificationInfo,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -32,6 +34,7 @@ import { getClipboard, setClipboard } from "./clipboard.js";
 import { readFile, writeFile, listDirectory } from "./filesystem.js";
 import { runCommand } from "./command.js";
 import { moveWindow, resizeWindow, minimizeWindow, setFullscreen } from "./window.js";
+import { getAlerts, getNotifications } from "./alerts.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
@@ -122,5 +125,11 @@ export class MacOSAdapter implements PlatformAdapter {
     return listDirectory(path);
   async runCommand(command: string, args?: string[], options?: CommandOptions): Promise<CommandResult> {
     return runCommand(command, args, options);
+  async getAlerts(): Promise<AlertInfo[]> {
+    return getAlerts();
+  }
+
+  async getNotifications(): Promise<NotificationInfo[]> {
+    return getNotifications();
   }
 }
