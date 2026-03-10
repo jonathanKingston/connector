@@ -86,20 +86,36 @@ $.CGEventPost($.kCGHIDEventTap, event);
 }
 
 export async function mouseDrag(options: MouseDragOptions): Promise<void> {
-  const { startX, startY, endX, endY, button } = options;
+  const { startX, startY, endX, endY, button, waypoints, speed } = options;
   const bp = buttonParams(button);
 
+  // Build all points: start -> waypoints -> end
+  const allPoints = [
+    { x: startX, y: startY },
+    ...(waypoints || []),
+    { x: endX, y: endY },
+  ];
+
+  // Generate drag events through all points
+  let dragCommands = "";
+  for (let i = 1; i < allPoints.length; i++) {
+    const p = allPoints[i];
+    const delayMs = speed === "slow" ? 100 : speed === "normal" ? 20 : 0;
+    dragCommands += `
+var drag${i} = $.CGEventCreateMouseEvent($(), ${bp.dragType}, {x: ${p.x}, y: ${p.y}}, ${bp.mouseButton});
+$.CGEventPost($.kCGHIDEventTap, drag${i});
+${delayMs > 0 ? `delay(${delayMs / 1000});` : ""}`;
+  }
+
+  const lastPoint = allPoints[allPoints.length - 1];
   const script = `
 ObjC.import('CoreGraphics');
 var startPoint = {x: ${startX}, y: ${startY}};
-var endPoint = {x: ${endX}, y: ${endY}};
+var endPoint = {x: ${lastPoint.x}, y: ${lastPoint.y}};
 
 var down = $.CGEventCreateMouseEvent($(), ${bp.downType}, startPoint, ${bp.mouseButton});
 $.CGEventPost($.kCGHIDEventTap, down);
-
-var drag = $.CGEventCreateMouseEvent($(), ${bp.dragType}, endPoint, ${bp.mouseButton});
-$.CGEventPost($.kCGHIDEventTap, drag);
-
+${dragCommands}
 var up = $.CGEventCreateMouseEvent($(), ${bp.upType}, endPoint, ${bp.mouseButton});
 $.CGEventPost($.kCGHIDEventTap, up);
 `;

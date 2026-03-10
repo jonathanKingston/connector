@@ -81,11 +81,66 @@ describe("mouse tools", () => {
         endX: 100,
         endY: 200,
         button: "left",
+        waypoints: undefined,
+        speed: "instant",
       });
 
       const text = (result.content as Array<{ type: string; text: string }>)[0].text;
       expect(text).toContain("10");
       expect(text).toContain("100");
+    });
+
+    it("drags with waypoints", async () => {
+      const waypoints = [
+        { x: 50, y: 60 },
+        { x: 70, y: 80 },
+      ];
+      const result = await ctx.client.callTool({
+        name: "mouse_drag",
+        arguments: {
+          startX: 10,
+          startY: 20,
+          endX: 100,
+          endY: 200,
+          waypoints,
+        },
+      });
+
+      expect(platform.mouseDrag).toHaveBeenCalledWith({
+        startX: 10,
+        startY: 20,
+        endX: 100,
+        endY: 200,
+        button: "left",
+        waypoints,
+        speed: "instant",
+      });
+
+      const text = (result.content as Array<{ type: string; text: string }>)[0].text;
+      expect(text).toContain("2 waypoint(s)");
+    });
+
+    it("drags with speed parameter", async () => {
+      await ctx.client.callTool({
+        name: "mouse_drag",
+        arguments: {
+          startX: 10,
+          startY: 20,
+          endX: 100,
+          endY: 200,
+          speed: "slow",
+        },
+      });
+
+      expect(platform.mouseDrag).toHaveBeenCalledWith({
+        startX: 10,
+        startY: 20,
+        endX: 100,
+        endY: 200,
+        button: "left",
+        waypoints: undefined,
+        speed: "slow",
+      });
     });
   });
 

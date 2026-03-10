@@ -47,6 +47,8 @@ export interface MouseDragOptions {
   endX: number;
   endY: number;
   button: MouseButton;
+  waypoints?: Array<{ x: number; y: number }>;
+  speed?: "instant" | "normal" | "slow";
 }
 
 export interface MouseScrollOptions {

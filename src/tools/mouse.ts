@@ -68,7 +68,7 @@ export function registerMouseTools(
   // ── mouse_drag ──────────────────────────────────────────────────────────
   server.tool(
     "mouse_drag",
-    "Drag the mouse from one point to another. Press down at (startX, startY), drag to (endX, endY), then release.",
+    "Drag the mouse from one point to another, optionally through intermediate waypoints. Press down at (startX, startY), drag through waypoints to (endX, endY), then release.",
     {
       startX: z.number().describe("Starting X coordinate"),
       startY: z.number().describe("Starting Y coordinate"),
@@ -78,20 +78,36 @@ export function registerMouseTools(
         .enum(["left", "right", "middle"])
         .default("left")
         .describe("Mouse button to hold during drag"),
+      waypoints: z
+        .array(z.object({
+          x: z.number(),
+          y: z.number(),
+        }))
+        .optional()
+        .describe("Intermediate points to drag through before reaching the end position"),
+      speed: z
+        .enum(["instant", "normal", "slow"])
+        .default("instant")
+        .describe("Speed of the drag operation"),
     },
-    async ({ startX, startY, endX, endY, button }) => {
+    async ({ startX, startY, endX, endY, button, waypoints, speed }) => {
       await platform.mouseDrag({
         startX,
         startY,
         endX,
         endY,
         button: button as MouseButton,
+        waypoints,
+        speed,
       });
+      const waypointText = waypoints && waypoints.length > 0
+        ? ` through ${waypoints.length} waypoint(s)`
+        : "";
       return {
         content: [
           {
             type: "text" as const,
-            text: `Dragged ${button} button from (${startX}, ${startY}) to (${endX}, ${endY})`,
+            text: `Dragged ${button} button from (${startX}, ${startY})${waypointText} to (${endX}, ${endY})`,
           },
         ],
       };
