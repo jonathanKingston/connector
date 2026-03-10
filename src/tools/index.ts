@@ -15,6 +15,7 @@ import { registerFilesystemTools } from "./filesystem.js";
 import { registerCommandTools } from "./command.js";
 import { registerWindowTools } from "./window.js";
 import { registerAlertTools } from "./alerts.js";
+import { registerWaitTools } from "./wait.js";
 
 /**
  * Register all Connector tools on the given MCP server.
@@ -34,4 +35,5 @@ export function registerTools(
   registerCommandTools(server, platform);
   registerWindowTools(server, platform);
   registerAlertTools(server, platform);
+  registerWaitTools(server, platform);
 }

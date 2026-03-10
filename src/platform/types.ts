@@ -167,6 +167,21 @@ export interface NotificationInfo {
   title: string;
   message: string;
   timestamp: string; // ISO 8601
+// ── Wait/Poll ──────────────────────────────────────────────────────────────
+
+export interface WaitForElementOptions {
+  pid: number;
+  role?: string;
+  titleContains?: string;
+  valueContains?: string;
+  timeout?: number;  // ms, default 10000
+  interval?: number; // ms, default 500
+}
+
+export interface WaitForWindowOptions {
+  titleContains: string;
+  timeout?: number;  // ms, default 10000
+  interval?: number; // ms, default 500
 }
 
 // ── Platform Adapter ────────────────────────────────────────────────────────
@@ -214,4 +229,7 @@ export interface PlatformAdapter {
   // Alerts & Notifications
   getAlerts(): Promise<AlertInfo[]>;
   getNotifications(): Promise<NotificationInfo[]>;
+  // Wait/Poll
+  waitForElement(options: WaitForElementOptions): Promise<UIElement | null>;
+  waitForWindow(options: WaitForWindowOptions): Promise<WindowInfo | null>;
 }

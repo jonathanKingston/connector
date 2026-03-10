@@ -88,5 +88,24 @@ export function createMockPlatform(): PlatformAdapter & {
     getNotifications: vi.fn().mockResolvedValue([
       { appName: "Mail", title: "New Message", message: "You have a new email", timestamp: "2025-01-01T00:00:00.000Z" },
     ]),
+    waitForElement: vi.fn().mockResolvedValue({
+      role: "AXButton",
+      title: "OK",
+      value: null,
+      description: null,
+      enabled: true,
+      position: { x: 100, y: 200 },
+      size: { width: 80, height: 30 },
+      children: [],
+    }),
+    waitForWindow: vi.fn().mockResolvedValue({
+      id: 1,
+      title: "New Document",
+      appName: "TextEdit",
+      appPid: 9999,
+      bounds: { x: 0, y: 0, width: 800, height: 600 },
+      isMinimized: false,
+      isFullscreen: false,
+    }),
   };
 }

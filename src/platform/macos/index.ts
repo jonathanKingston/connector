@@ -23,6 +23,8 @@ import type {
   CommandOptions,
   AlertInfo,
   NotificationInfo,
+  WaitForElementOptions,
+  WaitForWindowOptions,
 } from "../types.js";
 
 import { captureScreen } from "./screenshot.js";
@@ -35,6 +37,7 @@ import { readFile, writeFile, listDirectory } from "./filesystem.js";
 import { runCommand } from "./command.js";
 import { moveWindow, resizeWindow, minimizeWindow, setFullscreen } from "./window.js";
 import { getAlerts, getNotifications } from "./alerts.js";
+import { waitForElement, waitForWindow } from "./wait.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
@@ -131,5 +134,11 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async getNotifications(): Promise<NotificationInfo[]> {
     return getNotifications();
+  async waitForElement(options: WaitForElementOptions): Promise<UIElement | null> {
+    return waitForElement(this, options);
+  }
+
+  async waitForWindow(options: WaitForWindowOptions): Promise<WindowInfo | null> {
+    return waitForWindow(this, options);
   }
 }
