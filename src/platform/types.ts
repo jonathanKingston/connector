@@ -176,6 +176,10 @@ export interface PlatformAdapter {
 
   // Windows
   listWindows(): Promise<WindowInfo[]>;
+  moveWindow(pid: number, windowIndex: number, x: number, y: number): Promise<void>;
+  resizeWindow(pid: number, windowIndex: number, width: number, height: number): Promise<void>;
+  minimizeWindow(pid: number, windowIndex: number, minimize: boolean): Promise<void>;
+  setFullscreen(pid: number, windowIndex: number, fullscreen: boolean): Promise<void>;
 
   // Accessibility
   getAccessibilityTree(pid: number, maxDepth?: number): Promise<UIElement>;

@@ -78,5 +78,9 @@ export function createMockPlatform(): PlatformAdapter & {
       { name: "subdir", type: "directory", size: 0, modified: "2025-01-01T00:00:00.000Z" },
     ]),
     runCommand: vi.fn().mockResolvedValue({ stdout: "hello\n", stderr: "", exitCode: 0, timedOut: false }),
+    moveWindow: vi.fn().mockResolvedValue(undefined),
+    resizeWindow: vi.fn().mockResolvedValue(undefined),
+    minimizeWindow: vi.fn().mockResolvedValue(undefined),
+    setFullscreen: vi.fn().mockResolvedValue(undefined),
   };
 }

@@ -31,6 +31,7 @@ import { listApplications, activateApplication, listWindows } from "./applicatio
 import { getClipboard, setClipboard } from "./clipboard.js";
 import { readFile, writeFile, listDirectory } from "./filesystem.js";
 import { runCommand } from "./command.js";
+import { moveWindow, resizeWindow, minimizeWindow, setFullscreen } from "./window.js";
 
 export class MacOSAdapter implements PlatformAdapter {
   async captureScreen(displayId?: number, region?: ScreenRegion): Promise<ScreenshotResult> {
@@ -71,6 +72,22 @@ export class MacOSAdapter implements PlatformAdapter {
 
   async listWindows(): Promise<WindowInfo[]> {
     return listWindows();
+  }
+
+  async moveWindow(pid: number, windowIndex: number, x: number, y: number): Promise<void> {
+    return moveWindow(pid, windowIndex, x, y);
+  }
+
+  async resizeWindow(pid: number, windowIndex: number, width: number, height: number): Promise<void> {
+    return resizeWindow(pid, windowIndex, width, height);
+  }
+
+  async minimizeWindow(pid: number, windowIndex: number, minimize: boolean): Promise<void> {
+    return minimizeWindow(pid, windowIndex, minimize);
+  }
+
+  async setFullscreen(pid: number, windowIndex: number, fullscreen: boolean): Promise<void> {
+    return setFullscreen(pid, windowIndex, fullscreen);
   }
 
   async getAccessibilityTree(pid: number, maxDepth?: number): Promise<UIElement> {
