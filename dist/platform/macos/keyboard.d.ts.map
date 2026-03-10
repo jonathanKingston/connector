@@ -1,0 +1,1 @@
+{"version":3,"file":"keyboard.d.ts","sourceRoot":"","sources":["../../../src/platform/macos/keyboard.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AAGH,OAAO,KAAK,EAAE,mBAAmB,EAAE,kBAAkB,EAAe,MAAM,aAAa,CAAC;AA6DxF,wBAAsB,YAAY,CAAC,OAAO,EAAE,mBAAmB,GAAG,OAAO,CAAC,IAAI,CAAC,CAgB9E;AAED,wBAAsB,WAAW,CAAC,OAAO,EAAE,kBAAkB,GAAG,OAAO,CAAC,IAAI,CAAC,CAoC5E"}
