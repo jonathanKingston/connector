@@ -4,7 +4,7 @@
  * Sets up Express with:
  * - Optional auth middleware (Bearer token, enabled via CONNECTOR_PASSWORD)
  * - Streamable HTTP transport for MCP protocol
- * - Session management for persistent connections
+ * - Per-session McpServer instances (each session gets its own server+transport)
  */
 
 import { randomUUID } from "node:crypto";
@@ -14,7 +14,7 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import type { Request, Response, NextFunction } from "express";
 
 import { loadConfig } from "./config.js";
-import { createConnectorServer } from "./server.js";
+import { createServerFactory } from "./server.js";
 import { PasswordAuthProvider } from "./auth/password.js";
 import type { AuthProvider } from "./auth/types.js";
 
@@ -52,7 +52,7 @@ function createAuthMiddleware(authProvider: AuthProvider) {
 // ── Start server ────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const { mcpServer } = await createConnectorServer();
+  const factory = await createServerFactory();
 
   const app = createMcpExpressApp({ host: config.host });
 
@@ -86,7 +86,11 @@ async function main(): Promise<void> {
       }
 
       if (!sessionId && isInitializeRequest(req.body)) {
-        // New session initialization
+        // New session — create a fresh McpServer + transport pair.
+        // Each session gets its own McpServer because connect() binds
+        // exclusively to one transport.
+        const mcpServer = factory.createServer();
+
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (newSessionId: string) => {
