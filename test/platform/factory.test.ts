@@ -5,12 +5,25 @@ describe("createPlatformAdapter", () => {
     vi.restoreAllMocks();
   });
 
-  it("throws for unsupported platform (linux)", async () => {
-    // We can test this directly since we ARE on linux
+  it("returns linux terminal adapter on linux", async () => {
+    // We can test this directly since tests run on linux in CI.
     const { createPlatformAdapter } = await import("../../src/platform/factory.js");
+    const adapter = await createPlatformAdapter();
 
-    await expect(createPlatformAdapter()).rejects.toThrow(
-      'Platform "linux" is not yet supported',
+    expect(adapter.capabilities).toEqual({
+      screenshot: false,
+      mouse: false,
+      keyboard: false,
+      accessibility: false,
+      applications: false,
+      terminal: true,
+    });
+  });
+
+  it("throws for unsupported platform", async () => {
+    const { createPlatformAdapter } = await import("../../src/platform/factory.js");
+    await expect(createPlatformAdapter("freebsd" as NodeJS.Platform)).rejects.toThrow(
+      'Platform "freebsd" is not yet supported',
     );
   });
 });

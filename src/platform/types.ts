@@ -104,9 +104,36 @@ export interface MenuItem {
   children: MenuItem[];
 }
 
+// ── Terminal ────────────────────────────────────────────────────────────────
+
+export interface TerminalExecOptions {
+  /** Shell command to execute */
+  command: string;
+  /** Execution timeout in milliseconds */
+  timeoutMs?: number;
+}
+
+export interface TerminalExecResult {
+  stdout: string;
+  stderr: string;
+}
+
+// ── Capability flags ────────────────────────────────────────────────────────
+
+export interface PlatformCapabilities {
+  screenshot: boolean;
+  mouse: boolean;
+  keyboard: boolean;
+  accessibility: boolean;
+  applications: boolean;
+  terminal: boolean;
+}
+
 // ── Platform Adapter ────────────────────────────────────────────────────────
 
 export interface PlatformAdapter {
+  readonly capabilities: PlatformCapabilities;
+
   // Screen
   captureScreen(displayId?: number): Promise<ScreenshotResult>;
 
@@ -130,4 +157,7 @@ export interface PlatformAdapter {
   getAccessibilityTree(pid: number, maxDepth?: number): Promise<UIElement>;
   getMenuBar(pid: number): Promise<MenuBarItem[]>;
   clickMenuItem(pid: number, menuPath: string[]): Promise<void>;
+
+  // Terminal
+  terminalExec(options: TerminalExecOptions): Promise<TerminalExecResult>;
 }
