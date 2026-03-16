@@ -10,6 +10,7 @@ import { registerMouseTools } from "./mouse.js";
 import { registerKeyboardTools } from "./keyboard.js";
 import { registerAccessibilityTools } from "./accessibility.js";
 import { registerApplicationTools } from "./applications.js";
+import { registerTerminalTools } from "./terminal.js";
 
 /**
  * Register all Connector tools on the given MCP server.
@@ -19,9 +20,22 @@ export function registerTools(
   server: McpServer,
   platform: PlatformAdapter,
 ): void {
-  registerScreenshotTool(server, platform);
-  registerMouseTools(server, platform);
-  registerKeyboardTools(server, platform);
-  registerAccessibilityTools(server, platform);
-  registerApplicationTools(server, platform);
+  if (platform.capabilities.screenshot) {
+    registerScreenshotTool(server, platform);
+  }
+  if (platform.capabilities.mouse) {
+    registerMouseTools(server, platform);
+  }
+  if (platform.capabilities.keyboard) {
+    registerKeyboardTools(server, platform);
+  }
+  if (platform.capabilities.accessibility) {
+    registerAccessibilityTools(server, platform);
+  }
+  if (platform.capabilities.applications) {
+    registerApplicationTools(server, platform);
+  }
+  if (platform.capabilities.terminal) {
+    registerTerminalTools(server, platform);
+  }
 }

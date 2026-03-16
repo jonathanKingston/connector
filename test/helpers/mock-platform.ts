@@ -6,10 +6,32 @@
 import { vi } from "vitest";
 import type { PlatformAdapter } from "../../src/platform/types.js";
 
-export function createMockPlatform(): PlatformAdapter & {
-  [K in keyof PlatformAdapter]: ReturnType<typeof vi.fn>;
-} {
+export type MockPlatform = PlatformAdapter & {
+  captureScreen: ReturnType<typeof vi.fn>;
+  mouseClick: ReturnType<typeof vi.fn>;
+  mouseMove: ReturnType<typeof vi.fn>;
+  mouseDrag: ReturnType<typeof vi.fn>;
+  keyboardType: ReturnType<typeof vi.fn>;
+  keyboardKey: ReturnType<typeof vi.fn>;
+  listApplications: ReturnType<typeof vi.fn>;
+  activateApplication: ReturnType<typeof vi.fn>;
+  listWindows: ReturnType<typeof vi.fn>;
+  getAccessibilityTree: ReturnType<typeof vi.fn>;
+  getMenuBar: ReturnType<typeof vi.fn>;
+  clickMenuItem: ReturnType<typeof vi.fn>;
+  terminalExec: ReturnType<typeof vi.fn>;
+};
+
+export function createMockPlatform(): MockPlatform {
   return {
+    capabilities: {
+      screenshot: true,
+      mouse: true,
+      keyboard: true,
+      accessibility: true,
+      applications: true,
+      terminal: true,
+    },
     captureScreen: vi.fn().mockResolvedValue({
       data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
       mimeType: "image/png",
@@ -68,5 +90,9 @@ export function createMockPlatform(): PlatformAdapter & {
       },
     ]),
     clickMenuItem: vi.fn().mockResolvedValue(undefined),
+    terminalExec: vi.fn().mockResolvedValue({
+      stdout: "ok\n",
+      stderr: "",
+    }),
   };
 }

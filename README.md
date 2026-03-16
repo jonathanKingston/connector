@@ -11,6 +11,7 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
 | **Keyboard** | `keyboard_type`, `keyboard_key` | Type text and press keys with modifiers |
 | **Accessibility** | `get_accessibility_tree`, `get_menu_bar`, `click_menu_item` | Inspect UI hierarchy, menus, and click menu items |
 | **Applications** | `list_applications`, `list_windows`, `activate_application` | List running apps/windows and bring apps to foreground |
+| **Terminal** | `terminal_exec` | Execute shell commands on terminal-only Linux hosts |
 
 ## Architecture
 
@@ -27,13 +28,17 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
                                    └──────────────────────────────┘
 ```
 
-The server runs on the target machine and uses a **platform adapter pattern** — macOS is supported now; Windows and Linux adapters can be added by implementing the same interface without changing any tool or server code.
+The server runs on the target machine and uses a **platform adapter pattern**:
+- **macOS (GUI mode):** screenshot/mouse/keyboard/accessibility/application tools
+- **Linux (terminal-only mode):** `terminal_exec`
 
 ## Prerequisites
 
 - **Node.js** 20 or later
-- **macOS** (the target machine must be running macOS)
-- **Accessibility permissions** — grant Terminal (or whichever app runs the server) access in System Settings → Privacy & Security → Accessibility
+- One of:
+  - **macOS** with Accessibility permissions (for GUI tools)
+  - **Linux terminal-only host** (for `terminal_exec`)
+- For macOS GUI tools: grant Terminal (or whichever app runs the server) access in System Settings → Privacy & Security → Accessibility
 
 ## Quick Start
 
@@ -104,10 +109,14 @@ src/
 │   ├── mouse.ts                # mouse_click, mouse_move, mouse_drag
 │   ├── keyboard.ts             # keyboard_type, keyboard_key
 │   ├── accessibility.ts        # get_accessibility_tree, get_menu_bar, click_menu_item
-│   └── applications.ts         # list_applications, list_windows, activate_application
+│   ├── applications.ts         # list_applications, list_windows, activate_application
+│   └── terminal.ts             # terminal_exec
 ├── platform/
 │   ├── types.ts                # PlatformAdapter interface + all data types
 │   ├── factory.ts              # OS detection → adapter creation
+│   ├── linux/
+│   │   ├── index.ts            # Linux terminal-only adapter
+│   │   └── terminal.ts         # Bash command execution
 │   └── macos/
 │       ├── index.ts            # MacOSAdapter class
 │       ├── screenshot.ts       # screencapture CLI wrapper
@@ -207,6 +216,14 @@ Bring an application to the foreground.
 
 **Parameters:**
 - `target` (string) — App name (e.g. "Safari") or bundle ID (e.g. "com.apple.Safari")
+
+### terminal_exec
+
+Execute a shell command on terminal-only Linux hosts.
+
+**Parameters:**
+- `command` (string) — Shell command to run
+- `timeoutMs` (optional, number) — Command timeout in milliseconds (default 60000, max 600000)
 
 ## Security Notes
 
