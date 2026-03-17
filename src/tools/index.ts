@@ -23,23 +23,31 @@ function normalizeBlockedTools(blockedTools: Iterable<string>): Set<string> {
   );
 }
 
-function applyToolBlocking(server: McpServer, blockedTools: Set<string>): void {
+function createRegistrationServer(
+  server: McpServer,
+  blockedTools: Set<string>,
+): McpServer {
   if (blockedTools.size === 0) {
-    return;
+    return server;
   }
 
-  const originalTool = server.tool.bind(server) as (...args: unknown[]) => unknown;
-  const blockedTool = (
-    name: string,
-    ...rest: unknown[]
-  ): ReturnType<McpServer["tool"]> => {
-    if (blockedTools.has(name)) {
-      return undefined as ReturnType<McpServer["tool"]>;
-    }
-    return originalTool(name, ...rest) as ReturnType<McpServer["tool"]>;
-  };
+  return new Proxy(server, {
+    get(target, prop, receiver) {
+      if (prop !== "tool") {
+        return Reflect.get(target, prop, receiver);
+      }
 
-  (server as { tool: McpServer["tool"] }).tool = blockedTool as McpServer["tool"];
+      const originalTool = target.tool.bind(target) as (
+        ...args: unknown[]
+      ) => unknown;
+      return (name: string, ...rest: unknown[]) => {
+        if (blockedTools.has(name)) {
+          return undefined;
+        }
+        return originalTool(name, ...rest);
+      };
+    },
+  }) as McpServer;
 }
 
 /**
@@ -52,28 +60,31 @@ export function registerTools(
   additionalRegistrars: ToolRegistrar[] = [],
   blockedTools: Iterable<string> = [],
 ): void {
-  applyToolBlocking(server, normalizeBlockedTools(blockedTools));
+  const registrationServer = createRegistrationServer(
+    server,
+    normalizeBlockedTools(blockedTools),
+  );
 
   if (platform.capabilities.screenshot) {
-    registerScreenshotTool(server, platform);
+    registerScreenshotTool(registrationServer, platform);
   }
   if (platform.capabilities.mouse) {
-    registerMouseTools(server, platform);
+    registerMouseTools(registrationServer, platform);
   }
   if (platform.capabilities.keyboard) {
-    registerKeyboardTools(server, platform);
+    registerKeyboardTools(registrationServer, platform);
   }
   if (platform.capabilities.accessibility) {
-    registerAccessibilityTools(server, platform);
+    registerAccessibilityTools(registrationServer, platform);
   }
   if (platform.capabilities.applications) {
-    registerApplicationTools(server, platform);
+    registerApplicationTools(registrationServer, platform);
   }
   if (platform.capabilities.terminal) {
-    registerTerminalTools(server, platform);
+    registerTerminalTools(registrationServer, platform);
   }
 
   for (const register of additionalRegistrars) {
-    register(server, platform);
+    register(registrationServer, platform);
   }
 }
