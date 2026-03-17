@@ -83,7 +83,21 @@ CONNECTOR_TOOL_MODULES=./examples/custom-tools/setup-tools.mjs \
 npm start
 ```
 
-Prototype module: [`examples/custom-tools/setup-tools.mjs`](./examples/custom-tools/setup-tools.mjs)
+Prototype modules:
+- [`examples/custom-tools/setup-tools.mjs`](./examples/custom-tools/setup-tools.mjs)
+- [`examples/custom-tools/shell-command-tools.mjs`](./examples/custom-tools/shell-command-tools.mjs) — allow-listed terminal command tool (mcp-shell-server style)
+
+### mcp-shell-server style command exposure
+
+Use `shell-command-tools.mjs` to expose a constrained shell tool with argv input,
+an optional working directory, and an allow-list gate:
+
+```bash
+CONNECTOR_PASSWORD=your-secret-password \
+CONNECTOR_TOOL_MODULES=./examples/custom-tools/shell-command-tools.mjs \
+ALLOW_COMMANDS=ls,cat,echo,uname \
+npm start
+```
 
 ## Authentication
 
@@ -150,7 +164,8 @@ src/
 
 examples/
 └── custom-tools/
-    └── setup-tools.mjs         # prototype external tool module
+    ├── setup-tools.mjs         # prototype external tool module
+    └── shell-command-tools.mjs # allow-listed shell command tool module
 ```
 
 ## Tool Details
