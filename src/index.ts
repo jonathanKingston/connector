@@ -52,7 +52,9 @@ function createAuthMiddleware(authProvider: AuthProvider) {
 // ── Start server ────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const factory = await createServerFactory();
+  const factory = await createServerFactory({
+    externalToolModules: config.toolModules,
+  });
 
   const app = createMcpExpressApp({ host: config.host });
 
@@ -208,6 +210,11 @@ async function main(): Promise<void> {
       console.log("Authentication: Bearer token required");
     } else {
       console.log("Authentication: DISABLED (no CONNECTOR_PASSWORD set)");
+    }
+    if (config.toolModules.length > 0) {
+      console.log(
+        `External tool modules loaded: ${config.toolModules.join(", ")}`,
+      );
     }
   });
 

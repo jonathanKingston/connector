@@ -64,6 +64,26 @@ All configuration is via environment variables:
 | `CONNECTOR_PASSWORD` | **Yes** | — | Password for Bearer token authentication |
 | `CONNECTOR_PORT` | No | `3100` | Port to listen on |
 | `CONNECTOR_HOST` | No | `0.0.0.0` | Host/IP to bind to |
+| `CONNECTOR_TOOL_MODULES` | No | — | Comma-separated module specifiers to load extra setup-specific tools |
+
+### Setup-specific tool modules
+
+Connector can load extra tools at startup without modifying core host code.
+
+1. Create a module that exports either:
+   - `registerTools(server, platform)` (named export), or
+   - a default export function with the same signature.
+2. Set `CONNECTOR_TOOL_MODULES` to one or more module specifiers (comma-separated).
+
+Example:
+
+```bash
+CONNECTOR_PASSWORD=your-secret-password \
+CONNECTOR_TOOL_MODULES=./examples/custom-tools/setup-tools.mjs \
+npm start
+```
+
+Prototype module: [`examples/custom-tools/setup-tools.mjs`](./examples/custom-tools/setup-tools.mjs)
 
 ## Authentication
 
@@ -110,7 +130,8 @@ src/
 │   ├── keyboard.ts             # keyboard_type, keyboard_key
 │   ├── accessibility.ts        # get_accessibility_tree, get_menu_bar, click_menu_item
 │   ├── applications.ts         # list_applications, list_windows, activate_application
-│   └── terminal.ts             # terminal_exec
+│   ├── terminal.ts             # terminal_exec
+│   └── extensions.ts           # external setup-specific tool module loader
 ├── platform/
 │   ├── types.ts                # PlatformAdapter interface + all data types
 │   ├── factory.ts              # OS detection → adapter creation
@@ -126,6 +147,10 @@ src/
 │       └── applications.ts     # App/window listing and activation
 └── helpers/
     └── exec.ts                 # Promise-wrapped execFile with timeout
+
+examples/
+└── custom-tools/
+    └── setup-tools.mjs         # prototype external tool module
 ```
 
 ## Tool Details
