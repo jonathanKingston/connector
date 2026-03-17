@@ -12,6 +12,11 @@ import { registerAccessibilityTools } from "./accessibility.js";
 import { registerApplicationTools } from "./applications.js";
 import { registerTerminalTools } from "./terminal.js";
 
+export type ToolRegistrar = (
+  server: McpServer,
+  platform: PlatformAdapter,
+) => void;
+
 /**
  * Register all Connector tools on the given MCP server.
  * Each tool delegates to the platform adapter for OS-specific implementation.
@@ -19,6 +24,7 @@ import { registerTerminalTools } from "./terminal.js";
 export function registerTools(
   server: McpServer,
   platform: PlatformAdapter,
+  additionalRegistrars: ToolRegistrar[] = [],
 ): void {
   if (platform.capabilities.screenshot) {
     registerScreenshotTool(server, platform);
@@ -37,5 +43,9 @@ export function registerTools(
   }
   if (platform.capabilities.terminal) {
     registerTerminalTools(server, platform);
+  }
+
+  for (const register of additionalRegistrars) {
+    register(server, platform);
   }
 }

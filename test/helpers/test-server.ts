@@ -9,6 +9,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { registerTools } from "../../src/tools/index.js";
 import type { PlatformAdapter } from "../../src/platform/types.js";
+import type { ToolRegistrar } from "../../src/tools/index.js";
 
 export interface TestContext {
   client: Client;
@@ -18,13 +19,14 @@ export interface TestContext {
 
 export async function createTestContext(
   platform: PlatformAdapter,
+  additionalRegistrars: ToolRegistrar[] = [],
 ): Promise<TestContext> {
   const server = new McpServer({
     name: "connector-test",
     version: "0.0.1",
   });
 
-  registerTools(server, platform);
+  registerTools(server, platform, additionalRegistrars);
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 

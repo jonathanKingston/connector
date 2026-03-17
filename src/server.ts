@@ -9,7 +9,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createPlatformAdapter } from "./platform/factory.js";
 import { registerTools } from "./tools/index.js";
+import { loadExternalToolRegistrars } from "./tools/extensions.js";
 import type { PlatformAdapter } from "./platform/types.js";
+import type { ToolRegistrar } from "./tools/index.js";
 
 /**
  * Factory that creates configured McpServer instances on demand.
@@ -22,12 +24,22 @@ export interface ServerFactory {
   createServer(): McpServer;
 }
 
+export interface ServerFactoryOptions {
+  /** Optional external modules that expose setup-specific tools. */
+  externalToolModules?: string[];
+}
+
 /**
  * Initialize the platform adapter and return a factory for creating
  * per-session McpServer instances.
  */
-export async function createServerFactory(): Promise<ServerFactory> {
+export async function createServerFactory(
+  options: ServerFactoryOptions = {},
+): Promise<ServerFactory> {
   const platform = await createPlatformAdapter();
+  const additionalRegistrars: ToolRegistrar[] = await loadExternalToolRegistrars(
+    options.externalToolModules ?? [],
+  );
 
   return {
     platform,
@@ -36,7 +48,7 @@ export async function createServerFactory(): Promise<ServerFactory> {
         name: "Connector",
         version: "0.1.0",
       });
-      registerTools(mcpServer, platform);
+      registerTools(mcpServer, platform, additionalRegistrars);
       return mcpServer;
     },
   };
