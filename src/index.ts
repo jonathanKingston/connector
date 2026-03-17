@@ -54,6 +54,7 @@ function createAuthMiddleware(authProvider: AuthProvider) {
 async function main(): Promise<void> {
   const factory = await createServerFactory({
     externalToolModules: config.toolModules,
+    blockedTools: config.blockedTools,
   });
 
   const app = createMcpExpressApp({ host: config.host });
@@ -214,6 +215,11 @@ async function main(): Promise<void> {
     if (config.toolModules.length > 0) {
       console.log(
         `External tool modules loaded: ${config.toolModules.join(", ")}`,
+      );
+    }
+    if (config.blockedTools.length > 0) {
+      console.log(
+        `Blocked tools: ${config.blockedTools.join(", ")}`,
       );
     }
   });

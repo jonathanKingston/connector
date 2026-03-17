@@ -20,13 +20,14 @@ export interface TestContext {
 export async function createTestContext(
   platform: PlatformAdapter,
   additionalRegistrars: ToolRegistrar[] = [],
+  blockedTools: string[] = [],
 ): Promise<TestContext> {
   const server = new McpServer({
     name: "connector-test",
     version: "0.0.1",
   });
 
-  registerTools(server, platform, additionalRegistrars);
+  registerTools(server, platform, additionalRegistrars, blockedTools);
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
 

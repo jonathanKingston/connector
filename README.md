@@ -65,6 +65,7 @@ All configuration is via environment variables:
 | `CONNECTOR_PORT` | No | `3100` | Port to listen on |
 | `CONNECTOR_HOST` | No | `0.0.0.0` | Host/IP to bind to |
 | `CONNECTOR_TOOL_MODULES` | No | — | Comma-separated module specifiers to load extra setup-specific tools |
+| `CONNECTOR_BLOCKED_TOOLS` | No | — | Comma-separated tool names to prevent from being registered |
 
 ### Setup-specific tool modules
 
@@ -84,6 +85,20 @@ npm start
 ```
 
 Prototype module: [`examples/custom-tools/setup-tools.mjs`](./examples/custom-tools/setup-tools.mjs)
+
+### Block tools by name
+
+Use `CONNECTOR_BLOCKED_TOOLS` to suppress selected tools from being exposed.
+This applies to both built-in tools and any tools registered by external modules.
+
+Example:
+
+```bash
+CONNECTOR_PASSWORD=your-secret-password \
+CONNECTOR_TOOL_MODULES=./examples/custom-tools/setup-tools.mjs \
+CONNECTOR_BLOCKED_TOOLS=terminal_exec,setup_health_check \
+npm start
+```
 
 ## Authentication
 

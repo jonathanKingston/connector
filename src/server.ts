@@ -27,6 +27,8 @@ export interface ServerFactory {
 export interface ServerFactoryOptions {
   /** Optional external modules that expose setup-specific tools. */
   externalToolModules?: string[];
+  /** Optional tool names that should not be exposed. */
+  blockedTools?: string[];
 }
 
 /**
@@ -48,7 +50,12 @@ export async function createServerFactory(
         name: "Connector",
         version: "0.1.0",
       });
-      registerTools(mcpServer, platform, additionalRegistrars);
+      registerTools(
+        mcpServer,
+        platform,
+        additionalRegistrars,
+        options.blockedTools ?? [],
+      );
       return mcpServer;
     },
   };
