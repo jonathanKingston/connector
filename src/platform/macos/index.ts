@@ -24,6 +24,7 @@ import { mouseClick, mouseMove, mouseDrag } from "./mouse.js";
 import { keyboardType, keyboardKey } from "./keyboard.js";
 import { getAccessibilityTree, getMenuBar, clickMenuItem } from "./accessibility.js";
 import { listApplications, activateApplication, listWindows } from "./applications.js";
+import { terminalExec as runBashCommand } from "../bash-terminal.js";
 
 const MACOS_CAPABILITIES: PlatformCapabilities = {
   screenshot: true,
@@ -31,7 +32,7 @@ const MACOS_CAPABILITIES: PlatformCapabilities = {
   keyboard: true,
   accessibility: true,
   applications: true,
-  terminal: false,
+  terminal: true,
 };
 
 export class MacOSAdapter implements PlatformAdapter {
@@ -85,7 +86,7 @@ export class MacOSAdapter implements PlatformAdapter {
     return clickMenuItem(pid, menuPath);
   }
 
-  async terminalExec(_options: TerminalExecOptions): Promise<TerminalExecResult> {
-    throw new Error("terminal_exec is not supported on macOS GUI adapter");
+  async terminalExec(options: TerminalExecOptions): Promise<TerminalExecResult> {
+    return runBashCommand(options);
   }
 }

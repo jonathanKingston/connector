@@ -11,7 +11,7 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
 | **Keyboard** | `keyboard_type`, `keyboard_key` | Type text and press keys with modifiers |
 | **Accessibility** | `get_accessibility_tree`, `get_menu_bar`, `click_menu_item` | Inspect UI hierarchy, menus, and click menu items |
 | **Applications** | `list_applications`, `list_windows`, `activate_application` | List running apps/windows and bring apps to foreground |
-| **Terminal** | `terminal_exec` | Execute shell commands on terminal-only Linux hosts |
+| **Terminal** | `terminal_exec` | Execute shell commands via bash (macOS and Linux) |
 
 ## Architecture
 
@@ -29,15 +29,15 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
 ```
 
 The server runs on the target machine and uses a **platform adapter pattern**:
-- **macOS (GUI mode):** screenshot/mouse/keyboard/accessibility/application tools
-- **Linux (terminal-only mode):** `terminal_exec`
+- **macOS:** screenshot/mouse/keyboard/accessibility/application tools and `terminal_exec`
+- **Linux (terminal-only mode):** `terminal_exec` only (no GUI tools)
 
 ## Prerequisites
 
 - **Node.js** 20 or later
 - One of:
-  - **macOS** with Accessibility permissions (for GUI tools)
-  - **Linux terminal-only host** (for `terminal_exec`)
+  - **macOS** with Accessibility permissions (for GUI tools); `terminal_exec` uses `/bin/bash`
+  - **Linux terminal-only host** (for `terminal_exec` when not on macOS)
 - For macOS GUI tools: grant Terminal (or whichever app runs the server) access in System Settings → Privacy & Security → Accessibility
 
 ## Quick Start
@@ -135,9 +135,10 @@ src/
 ├── platform/
 │   ├── types.ts                # PlatformAdapter interface + all data types
 │   ├── factory.ts              # OS detection → adapter creation
+│   ├── bash-terminal.ts        # Shared /bin/bash execution (macOS + Linux)
 │   ├── linux/
 │   │   ├── index.ts            # Linux terminal-only adapter
-│   │   └── terminal.ts         # Bash command execution
+│   │   └── terminal.ts         # Re-export bash execution
 │   └── macos/
 │       ├── index.ts            # MacOSAdapter class
 │       ├── screenshot.ts       # screencapture CLI wrapper
@@ -244,7 +245,7 @@ Bring an application to the foreground.
 
 ### terminal_exec
 
-Execute a shell command on terminal-only Linux hosts.
+Execute a shell command on the host via `/bin/bash` with `set -euo pipefail` (macOS and Linux adapters).
 
 **Parameters:**
 - `command` (string) — Shell command to run
