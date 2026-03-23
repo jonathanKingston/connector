@@ -3,6 +3,7 @@
  *
  * Sets up Express with:
  * - Optional auth middleware (Bearer token, enabled via CONNECTOR_PASSWORD)
+ * - Optional debug logging (CONNECTOR_DEBUG=1 or true → stderr: requests, responses, terminal_exec)
  * - Streamable HTTP transport for MCP protocol
  * - Per-session McpServer instances (each session gets its own server+transport)
  */
@@ -14,6 +15,15 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import type { Request, Response, NextFunction } from "express";
 
 import { loadConfig } from "./config.js";
+import {
+  attachMcpResponseDebugLogging,
+  attachMcpWireBytesOnly,
+  clientIp,
+  connectorDebug,
+  connectorDebugEnabled,
+  connectorDebugSseBodiesEnabled,
+  logMcpPostBody,
+} from "./debug.js";
 import { createServerFactory } from "./server.js";
 import { PasswordAuthProvider } from "./auth/password.js";
 import type { AuthProvider } from "./auth/types.js";
@@ -58,6 +68,22 @@ async function main(): Promise<void> {
 
   const app = createMcpExpressApp({ host: config.host });
 
+  const trustProxyEnv = process.env.CONNECTOR_TRUST_PROXY?.trim();
+  if (trustProxyEnv) {
+    if (
+      trustProxyEnv === "1" ||
+      trustProxyEnv.toLowerCase() === "true" ||
+      trustProxyEnv.toLowerCase() === "yes"
+    ) {
+      app.set("trust proxy", true);
+    } else {
+      const hops = parseInt(trustProxyEnv, 10);
+      if (Number.isFinite(hops) && hops >= 0) {
+        app.set("trust proxy", hops);
+      }
+    }
+  }
+
   // Session management: map session IDs to their transports
   const transports: Record<string, StreamableHTTPServerTransport> = {};
 
@@ -80,6 +106,9 @@ async function main(): Promise<void> {
   app.post("/mcp", async (req: Request, res: Response): Promise<void> => {
     try {
       const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      const ip = clientIp(req);
+      attachMcpResponseDebugLogging(res, { sessionId, route: "POST", clientIp: ip });
+      logMcpPostBody(req.body, sessionId, ip);
 
       if (sessionId && transports[sessionId]) {
         // Existing session — route to its transport
@@ -140,6 +169,18 @@ async function main(): Promise<void> {
 
   app.get("/mcp", async (req: Request, res: Response): Promise<void> => {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    if (connectorDebugEnabled()) {
+      const ip = clientIp(req);
+      if (connectorDebugSseBodiesEnabled()) {
+        attachMcpResponseDebugLogging(res, { sessionId, route: "GET", clientIp: ip });
+        connectorDebug("mcp GET", {
+          sessionId: sessionId ?? "(missing)",
+          clientIp: ip,
+        });
+      } else {
+        attachMcpWireBytesOnly(res, { sessionId, route: "GET", clientIp: ip });
+      }
+    }
     if (!sessionId || !transports[sessionId]) {
       res.status(400).json({
         jsonrpc: "2.0",
@@ -158,6 +199,11 @@ async function main(): Promise<void> {
 
   app.delete("/mcp", async (req: Request, res: Response): Promise<void> => {
     const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    const ip = clientIp(req);
+    attachMcpResponseDebugLogging(res, { sessionId, route: "DELETE", clientIp: ip });
+    if (connectorDebugEnabled()) {
+      connectorDebug("mcp DELETE", { sessionId: sessionId ?? "(missing)", clientIp: ip });
+    }
     if (!sessionId || !transports[sessionId]) {
       res.status(400).json({
         jsonrpc: "2.0",
@@ -214,6 +260,15 @@ async function main(): Promise<void> {
     if (config.toolModules.length > 0) {
       console.log(
         `External tool modules loaded: ${config.toolModules.join(", ")}`,
+      );
+    }
+    if (connectorDebugEnabled()) {
+      console.log(
+        "CONNECTOR_DEBUG: MCP requests, responses (SSE/JSON), and terminal_exec → stderr" +
+          (connectorDebugSseBodiesEnabled()
+            ? ""
+            : " (CONNECTOR_DEBUG_SSE=0: GET SSE streams not logged; POST SSE still logs omitted line)") +
+          (trustProxyEnv ? "; CONNECTOR_TRUST_PROXY set (clientIp uses X-Forwarded-For)" : ""),
       );
     }
   });

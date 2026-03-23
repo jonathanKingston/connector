@@ -2,6 +2,7 @@
  * Bash-backed command execution for platform adapters (macOS, Linux).
  */
 
+import { connectorDebug } from "../debug.js";
 import { exec } from "../helpers/exec.js";
 import type { TerminalExecOptions, TerminalExecResult } from "./types.js";
 
@@ -22,11 +23,18 @@ export async function terminalExec(
     throw new Error("Command cannot be empty.");
   }
 
+  connectorDebug("terminalExec", { timeoutMs, command });
+
   const { stdout, stderr } = await exec(
     BASH_PATH,
     ["-lc", `${STRICT_SHELL_PREFIX}${command}`],
     timeoutMs,
   );
+
+  connectorDebug("terminalExec done", {
+    stdoutBytes: stdout.length,
+    stderrBytes: stderr.length,
+  });
 
   return { stdout, stderr };
 }

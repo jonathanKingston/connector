@@ -65,6 +65,7 @@ All configuration is via environment variables:
 | `CONNECTOR_PORT` | No | `3100` | Port to listen on |
 | `CONNECTOR_HOST` | No | `0.0.0.0` | Host/IP to bind to |
 | `CONNECTOR_TOOL_MODULES` | No | — | Comma-separated module specifiers to load extra setup-specific tools |
+| `CONNECTOR_DEBUG` | No | off | Set to `1` or `true` to log MCP HTTP requests, response bodies (SSE events parsed as JSON-RPC where possible, size-capped), and `terminal_exec` to stderr (`[connector]` prefix) |
 
 ### Setup-specific tool modules
 
