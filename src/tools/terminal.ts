@@ -15,7 +15,7 @@ export function registerTerminalTools(
 ): void {
   server.tool(
     "terminal_exec",
-    "Execute a shell command on the host machine. Use this on terminal-only Linux devices where GUI tools are unavailable. Commands run with strict bash mode (set -euo pipefail).",
+    "Execute a shell command on the host machine via bash (set -euo pipefail). Available on macOS and Linux terminal-capable adapters.",
     {
       command: z.string().min(1).describe("Shell command to execute"),
       timeoutMs: z

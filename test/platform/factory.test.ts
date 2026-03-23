@@ -6,9 +6,8 @@ describe("createPlatformAdapter", () => {
   });
 
   it("returns linux terminal adapter on linux", async () => {
-    // We can test this directly since tests run on linux in CI.
     const { createPlatformAdapter } = await import("../../src/platform/factory.js");
-    const adapter = await createPlatformAdapter();
+    const adapter = await createPlatformAdapter("linux");
 
     expect(adapter.capabilities).toEqual({
       screenshot: false,
@@ -18,6 +17,14 @@ describe("createPlatformAdapter", () => {
       applications: false,
       terminal: true,
     });
+  });
+
+  it("returns macOS adapter with terminal on darwin", async () => {
+    const { createPlatformAdapter } = await import("../../src/platform/factory.js");
+    const adapter = await createPlatformAdapter("darwin");
+
+    expect(adapter.capabilities.terminal).toBe(true);
+    expect(adapter.capabilities.screenshot).toBe(true);
   });
 
   it("throws for unsupported platform", async () => {
