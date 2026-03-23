@@ -65,6 +65,7 @@ All configuration is via environment variables:
 | `CONNECTOR_PORT` | No | `3100` | Port to listen on |
 | `CONNECTOR_HOST` | No | `0.0.0.0` | Host/IP to bind to |
 | `CONNECTOR_TOOL_MODULES` | No | — | Comma-separated module specifiers to load extra setup-specific tools |
+| `CONNECTOR_DEBUG` | No | off | Set to `1` or `true` to log MCP HTTP requests, response bodies (SSE events parsed as JSON-RPC where possible, size-capped), and `terminal_exec` to stderr (`[connector]` prefix) |
 
 ### Setup-specific tool modules
 
@@ -84,6 +85,45 @@ npm start
 ```
 
 Prototype module: [`examples/custom-tools/setup-tools.mjs`](./examples/custom-tools/setup-tools.mjs)
+
+### Linux: static-pages deploy as `www-data`
+
+A common pattern is to run Connector as **`www-data`** and drive a **static-pages** git checkout for build/deploy. The MCP tool module (`static_pages_*`), nginx examples, and the seed script live in the separate **`static-pages-host`** repo (not in this tree). Connector only needs `CONNECTOR_TOOL_MODULES` pointing at the module file.
+
+If the git working tree were only under another user’s home directory, **`www-data`** would hit **`Permission denied`** on `.git/index.lock`. Instead, mirror the repo under **`/var/lib/connector-tools/`** (owned by **`www-data`**):
+
+```
+/var/lib/connector-tools/
+├── static-pages/              # git mirror only (not your $HOME clone)
+├── static-pages-deploy.mjs    # copied by seed script; CONNECTOR_TOOL_MODULES points here
+├── package.json               # minimal deps for the module (zod)
+└── node_modules/
+```
+
+1. **Seed or refresh** (run as root). From your **`static-pages-host`** checkout:
+
+   ```bash
+   cd /path/to/static-pages-host
+   sudo ./seed-static-pages-for-www-data.sh /path/to/your/static-pages
+   ```
+
+   Default source is **`$HOME/static-pages`**. The script **`rsync --delete`**s into **`static-pages/`**, then runs **`git reset --hard HEAD`** and **`git clean -fd`** so the mirror is a **clean checkout** (untracked junk from a dev clone is removed; gitignored paths such as **`node_modules`** stay).
+
+   If you see **`getcwd`** / rsync errors, your shell’s cwd may have been deleted — **`cd /`** (or a new shell) and run again.
+
+2. **Point Connector** at the installed module ( **`www-data`** does not need to read your home or the **`static-pages-host`** tree after seeding):
+
+   ```bash
+   CONNECTOR_TOOL_MODULES=/var/lib/connector-tools/static-pages-deploy.mjs
+   ```
+
+   The module defaults **`STATIC_PAGES_REPO`** to **`/var/lib/connector-tools/static-pages`** when that path contains **`.git`**, else **`~/static-pages`**. Override with **`STATIC_PAGES_REPO`** / **`STATIC_PAGES_DEPLOY`** / **`STATIC_PAGES_DEBUG`** as needed (see **`static-pages-host`** README).
+
+3. **`git pull` / remote:** The mirror keeps your existing **`origin`**. **`www-data`** needs SSH (or HTTPS) credentials for that remote — on Debian/Ubuntu, **`HOME` is `/var/www`**, so **`/var/www/.ssh`** must exist and hold a trusted key; see **`static-pages-host`** README. Otherwise re-seed from a user that can fetch.
+
+4. **Build tools:** Put **`just`** on **`PATH`** for the Connector process (e.g. **`/usr/local/bin`**). static-pages builds need **Node 20+** / **npm 10+**; the **`static-pages-host`** deploy module prepends **`/opt/node20/bin`** when installed there, and sets a writable **`npm_config_cache`** under **`/var/lib/connector-tools/`** so **`www-data`** is not blocked by **`/var/www/.npm`** (see that repo’s README). Tool **`timeoutMs`** values there are **milliseconds** (Node `execFile`); the MCP **client** may also stop waiting before a long build finishes.
+
+**Local dev (no seed):** install deps in **`static-pages-host`** (`npm install` there), then run Connector with an absolute path to the module in that repo, e.g. **`CONNECTOR_TOOL_MODULES=/path/to/static-pages-host/static-pages-deploy.mjs`**.
 
 ## Authentication
 
