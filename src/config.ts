@@ -28,10 +28,10 @@ export interface Config {
   sessionIdleTtlMs: number;
 }
 
-/** Parse `CONNECTOR_SESSION_IDLE_MS` — default 24h; `0` = no idle TTL sweep. */
+/** Parse `CONNECTOR_SESSION_IDLE_MS` — default 1h; `0` = no idle TTL sweep. */
 export function parseSessionIdleTtlMs(raw: string | undefined): number {
   if (raw === undefined || raw.trim() === "") {
-    return 86_400_000;
+    return 3_600_000;
   }
   const parsed = parseInt(raw.trim(), 10);
   if (!Number.isFinite(parsed) || parsed < 0) {

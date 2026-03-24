@@ -66,7 +66,7 @@ All configuration is via environment variables:
 | `CONNECTOR_HOST` | No | `0.0.0.0` | Host/IP to bind to |
 | `CONNECTOR_TOOLS` | No | *(empty)* | **Opt-in** built-in tools. Unset or empty = no built-in tools (only `CONNECTOR_TOOL_MODULES`). `all` = every group **except** `terminal` (shell is opt-in). Use `all,terminal` for the full set, or list names: `screenshot`, `mouse`, `keyboard`, `accessibility`, `applications`, `terminal` |
 | `CONNECTOR_TOOL_MODULES` | No | — | Comma-separated module specifiers to load extra setup-specific tools |
-| `CONNECTOR_SESSION_IDLE_MS` | No | `86400000` (24h) | Evict MCP sessions with no POST/GET/DELETE to `/mcp` for this long. Helps bound memory when clients vanish without closing (which may not fire `transport.onclose`). Set `0` to disable idle eviction. |
+| `CONNECTOR_SESSION_IDLE_MS` | No | `3600000` (1h) | Evict MCP sessions with no POST/GET/DELETE to `/mcp` for this long. Helps bound memory when clients vanish without closing (which may not fire `transport.onclose`). Set `0` to disable idle eviction. |
 | `CONNECTOR_DEBUG` | No | off | Set to `1` or `true` to log MCP HTTP requests, response bodies (SSE events parsed as JSON-RPC where possible, size-capped), and `terminal_exec` to stderr (`[connector]` prefix) |
 
 ### Setup-specific tool modules

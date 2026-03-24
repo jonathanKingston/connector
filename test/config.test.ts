@@ -57,10 +57,10 @@ describe("parseConnectorToolsEnv", () => {
 });
 
 describe("parseSessionIdleTtlMs", () => {
-  it("defaults to 24 hours when unset or empty", () => {
-    expect(parseSessionIdleTtlMs(undefined)).toBe(86_400_000);
-    expect(parseSessionIdleTtlMs("")).toBe(86_400_000);
-    expect(parseSessionIdleTtlMs("   ")).toBe(86_400_000);
+  it("defaults to 1 hour when unset or empty", () => {
+    expect(parseSessionIdleTtlMs(undefined)).toBe(3_600_000);
+    expect(parseSessionIdleTtlMs("")).toBe(3_600_000);
+    expect(parseSessionIdleTtlMs("   ")).toBe(3_600_000);
   });
 
   it("allows 0 to disable idle eviction", () => {
