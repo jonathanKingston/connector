@@ -21,6 +21,25 @@ export interface Config {
    * Env token `all` expands to every group except `terminal`.
    */
   enabledToolGroups: Set<ToolGroup>;
+  /**
+   * Drop MCP sessions with no HTTP activity for this long (ms).
+   * `0` disables idle eviction (only `transport.onclose` removes sessions).
+   */
+  sessionIdleTtlMs: number;
+}
+
+/** Parse `CONNECTOR_SESSION_IDLE_MS` — default 24h; `0` = no idle TTL sweep. */
+export function parseSessionIdleTtlMs(raw: string | undefined): number {
+  if (raw === undefined || raw.trim() === "") {
+    return 86_400_000;
+  }
+  const parsed = parseInt(raw.trim(), 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error(
+      `CONNECTOR_SESSION_IDLE_MS must be a non-negative integer (milliseconds), got: "${raw}"`,
+    );
+  }
+  return parsed;
 }
 
 export function loadConfig(): Config {
@@ -42,5 +61,16 @@ export function loadConfig(): Config {
 
   const host = process.env.CONNECTOR_HOST ?? "0.0.0.0";
 
-  return { port, host, password, toolModules, enabledToolGroups };
+  const sessionIdleTtlMs = parseSessionIdleTtlMs(
+    process.env.CONNECTOR_SESSION_IDLE_MS,
+  );
+
+  return {
+    port,
+    host,
+    password,
+    toolModules,
+    enabledToolGroups,
+    sessionIdleTtlMs,
+  };
 }
