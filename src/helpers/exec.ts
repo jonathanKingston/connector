@@ -8,12 +8,21 @@ import { track } from "../shutdown.js";
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 
+/** Node child_process errors set `code` to the exit code (number) or an errno string (e.g. ENOENT). */
+function childProcessFailureCode(error: Error): number | string | null {
+  if (!("code" in error)) {
+    return null;
+  }
+  const { code } = error as Error & { code?: number | string };
+  return code === undefined ? null : code;
+}
+
 export class ExecError extends Error {
   constructor(
     message: string,
     public readonly command: string,
     public readonly args: readonly string[],
-    public readonly exitCode: number | null,
+    public readonly exitCode: number | string | null,
     public readonly stderr: string,
     public readonly stdout: string,
   ) {
@@ -66,7 +75,7 @@ export function exec(
                 error.message,
                 command,
                 args,
-                "code" in error ? (error.code as unknown as number) : null,
+                childProcessFailureCode(error),
                 stderr,
                 stdout,
               ),
