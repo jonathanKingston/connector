@@ -3,6 +3,10 @@
  * Fails fast if required values are invalid.
  */
 
+import { parseConnectorToolsEnv, type ToolGroup } from "./tool-groups.js";
+
+export type { ToolGroup };
+
 export interface Config {
   /** Port to listen on */
   port: number;
@@ -12,6 +16,11 @@ export interface Config {
   password: string | undefined;
   /** Optional external modules that register setup-specific tools. */
   toolModules: string[];
+  /**
+   * Which built-in tool groups to expose. Empty = none (opt-in).
+   * Env token `all` expands to every group except `terminal`.
+   */
+  enabledToolGroups: Set<ToolGroup>;
 }
 
 export function loadConfig(): Config {
@@ -20,6 +29,8 @@ export function loadConfig(): Config {
     .split(",")
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0);
+
+  const enabledToolGroups = parseConnectorToolsEnv(process.env.CONNECTOR_TOOLS);
 
   const portStr = process.env.CONNECTOR_PORT;
   const port = portStr ? parseInt(portStr, 10) : 3100;
@@ -31,5 +42,5 @@ export function loadConfig(): Config {
 
   const host = process.env.CONNECTOR_HOST ?? "0.0.0.0";
 
-  return { port, host, password, toolModules };
+  return { port, host, password, toolModules, enabledToolGroups };
 }
