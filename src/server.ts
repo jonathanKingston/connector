@@ -12,6 +12,7 @@ import { registerTools } from "./tools/index.js";
 import { loadExternalToolRegistrars } from "./tools/extensions.js";
 import type { PlatformAdapter } from "./platform/types.js";
 import type { ToolRegistrar } from "./tools/index.js";
+import type { ToolGroup } from "./tool-groups.js";
 
 /**
  * Factory that creates configured McpServer instances on demand.
@@ -27,6 +28,8 @@ export interface ServerFactory {
 export interface ServerFactoryOptions {
   /** Optional external modules that expose setup-specific tools. */
   externalToolModules?: string[];
+  /** Built-in tool groups (from CONNECTOR_TOOLS). */
+  enabledToolGroups: Set<ToolGroup>;
 }
 
 /**
@@ -34,7 +37,7 @@ export interface ServerFactoryOptions {
  * per-session McpServer instances.
  */
 export async function createServerFactory(
-  options: ServerFactoryOptions = {},
+  options: ServerFactoryOptions,
 ): Promise<ServerFactory> {
   const platform = await createPlatformAdapter();
   const additionalRegistrars: ToolRegistrar[] = await loadExternalToolRegistrars(
@@ -48,7 +51,9 @@ export async function createServerFactory(
         name: "Connector",
         version: "0.1.0",
       });
-      registerTools(mcpServer, platform, additionalRegistrars);
+      registerTools(mcpServer, platform, additionalRegistrars, {
+        enabledToolGroups: options.enabledToolGroups,
+      });
       return mcpServer;
     },
   };

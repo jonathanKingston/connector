@@ -64,6 +64,7 @@ function createAuthMiddleware(authProvider: AuthProvider) {
 async function main(): Promise<void> {
   const factory = await createServerFactory({
     externalToolModules: config.toolModules,
+    enabledToolGroups: config.enabledToolGroups,
   });
 
   const app = createMcpExpressApp({ host: config.host });
@@ -260,6 +261,15 @@ async function main(): Promise<void> {
     if (config.toolModules.length > 0) {
       console.log(
         `External tool modules loaded: ${config.toolModules.join(", ")}`,
+      );
+    }
+    if (config.enabledToolGroups.size === 0) {
+      console.log(
+        "Built-in tools: none (CONNECTOR_TOOLS=all omits terminal; use all,terminal for shell)",
+      );
+    } else {
+      console.log(
+        `Built-in tools: ${[...config.enabledToolGroups].sort().join(", ")}`,
       );
     }
     if (connectorDebugEnabled()) {
