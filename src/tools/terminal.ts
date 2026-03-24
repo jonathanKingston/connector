@@ -4,9 +4,11 @@
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { PlatformAdapter } from "../platform/types.js";
+import {
+  DEFAULT_TERMINAL_TIMEOUT_MS,
+  type PlatformAdapter,
+} from "../platform/types.js";
 
-const DEFAULT_TERMINAL_TIMEOUT_MS = 60_000;
 const MAX_TERMINAL_TIMEOUT_MS = 600_000;
 
 export function registerTerminalTools(

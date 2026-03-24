@@ -106,6 +106,9 @@ export interface MenuItem {
 
 // ── Terminal ────────────────────────────────────────────────────────────────
 
+/** Default timeout when `timeoutMs` is omitted for `terminalExec`. */
+export const DEFAULT_TERMINAL_TIMEOUT_MS = 60_000;
+
 export interface TerminalExecOptions {
   /** Shell command to execute */
   command: string;
