@@ -16,6 +16,10 @@ import type { Request, Response, NextFunction } from "express";
 
 import { loadConfig } from "./config.js";
 import {
+  beginShutdown,
+  waitForPendingOperations,
+} from "./shutdown.js";
+import {
   attachMcpResponseDebugLogging,
   attachMcpWireBytesOnly,
   clientIp,
@@ -249,7 +253,7 @@ async function main(): Promise<void> {
 
   // ── Start listening ─────────────────────────────────────────────────
 
-  app.listen(config.port, config.host, () => {
+  const httpServer = app.listen(config.port, config.host, () => {
     console.log(
       `Connector MCP server listening on http://${config.host}:${config.port}/mcp`,
     );
@@ -284,9 +288,24 @@ async function main(): Promise<void> {
   });
 
   // ── Graceful shutdown ───────────────────────────────────────────────
+  // 1) Abort/kill in-flight terminal_exec (and other exec-backed work) via shutdown signal.
+  // 2) Wait for tracked child processes to settle (see helpers/exec.ts + shutdown.ts).
+  // 3) Close MCP transports, then the HTTP server, then exit.
 
-  const shutdown = async () => {
+  const SHUTDOWN_DRAIN_MS = 60_000;
+  let shutdownStarted = false;
+
+  const shutdown = async (): Promise<void> => {
+    if (shutdownStarted) {
+      console.error("Shutdown already in progress; forcing exit.");
+      process.exit(1);
+    }
+    shutdownStarted = true;
+
     console.log("Shutting down Connector...");
+    beginShutdown();
+    await waitForPendingOperations(SHUTDOWN_DRAIN_MS);
+
     for (const sessionId of Object.keys(transports)) {
       try {
         await transports[sessionId].close();
@@ -295,11 +314,20 @@ async function main(): Promise<void> {
         console.error(`Error closing session ${sessionId}:`, error);
       }
     }
+
+    await new Promise<void>((resolve) => {
+      httpServer.close(() => resolve());
+    });
+
     process.exit(0);
   };
 
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", () => {
+    void shutdown();
+  });
+  process.on("SIGTERM", () => {
+    void shutdown();
+  });
 }
 
 main().catch((error) => {
