@@ -32,6 +32,12 @@ import { createServerFactory } from "./server.js";
 import { PasswordAuthProvider } from "./auth/password.js";
 import type { AuthProvider } from "./auth/types.js";
 
+type SessionEntry = {
+  transport: StreamableHTTPServerTransport;
+  /** Last time this session received a POST/GET/DELETE to `/mcp`. */
+  lastActivity: number;
+};
+
 // ── Load configuration ──────────────────────────────────────────────────
 
 const config = loadConfig();
@@ -89,8 +95,56 @@ async function main(): Promise<void> {
     }
   }
 
-  // Session management: map session IDs to their transports
-  const transports: Record<string, StreamableHTTPServerTransport> = {};
+  // Session management: map session IDs to transports + last-activity (for idle TTL).
+  const sessions = new Map<string, SessionEntry>();
+
+  function touchSession(sessionId: string | undefined): void {
+    if (!sessionId) {
+      return;
+    }
+    const entry = sessions.get(sessionId);
+    if (entry) {
+      entry.lastActivity = Date.now();
+    }
+  }
+
+  let idleSweepTimer: ReturnType<typeof setInterval> | undefined;
+  if (config.sessionIdleTtlMs > 0) {
+    const ttl = config.sessionIdleTtlMs;
+    const intervalMs = Math.min(
+      3_600_000,
+      Math.max(60_000, Math.floor(ttl / 10)),
+    );
+    idleSweepTimer = setInterval(() => {
+      void (async () => {
+        const now = Date.now();
+        const staleIds: string[] = [];
+        for (const [id, entry] of sessions) {
+          if (now - entry.lastActivity > ttl) {
+            staleIds.push(id);
+          }
+        }
+        for (const id of staleIds) {
+          const entry = sessions.get(id);
+          if (!entry || now - entry.lastActivity <= ttl) {
+            continue;
+          }
+          if (connectorDebugEnabled()) {
+            connectorDebug("session idle TTL evicting", { sessionId: id });
+          }
+          try {
+            await entry.transport.close();
+          } catch (error) {
+            console.error(`Error closing idle session ${id}:`, error);
+          }
+          sessions.delete(id);
+        }
+      })();
+    }, intervalMs);
+    if (typeof idleSweepTimer.unref === "function") {
+      idleSweepTimer.unref();
+    }
+  }
 
   // ── Apply auth middleware to /mcp if password is configured ──────────
 
@@ -115,9 +169,11 @@ async function main(): Promise<void> {
       attachMcpResponseDebugLogging(res, { sessionId, route: "POST", clientIp: ip });
       logMcpPostBody(req.body, sessionId, ip);
 
-      if (sessionId && transports[sessionId]) {
+      const existing = sessionId ? sessions.get(sessionId) : undefined;
+      if (sessionId && existing) {
         // Existing session — route to its transport
-        await transports[sessionId].handleRequest(req, res, req.body);
+        touchSession(sessionId);
+        await existing.transport.handleRequest(req, res, req.body);
         return;
       }
 
@@ -130,14 +186,17 @@ async function main(): Promise<void> {
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
           onsessioninitialized: (newSessionId: string) => {
-            transports[newSessionId] = transport;
+            sessions.set(newSessionId, {
+              transport,
+              lastActivity: Date.now(),
+            });
           },
         });
 
         transport.onclose = () => {
           const sid = transport.sessionId;
-          if (sid && transports[sid]) {
-            delete transports[sid];
+          if (sid && sessions.has(sid)) {
+            sessions.delete(sid);
           }
         };
 
@@ -186,7 +245,8 @@ async function main(): Promise<void> {
         attachMcpWireBytesOnly(res, { sessionId, route: "GET", clientIp: ip });
       }
     }
-    if (!sessionId || !transports[sessionId]) {
+    const sseEntry = sessionId ? sessions.get(sessionId) : undefined;
+    if (!sessionId || !sseEntry) {
       res.status(400).json({
         jsonrpc: "2.0",
         error: {
@@ -197,7 +257,8 @@ async function main(): Promise<void> {
       });
       return;
     }
-    await transports[sessionId].handleRequest(req, res);
+    touchSession(sessionId);
+    await sseEntry.transport.handleRequest(req, res);
   });
 
   // ── DELETE /mcp — session termination ───────────────────────────────
@@ -209,7 +270,8 @@ async function main(): Promise<void> {
     if (connectorDebugEnabled()) {
       connectorDebug("mcp DELETE", { sessionId: sessionId ?? "(missing)", clientIp: ip });
     }
-    if (!sessionId || !transports[sessionId]) {
+    const deleteEntry = sessionId ? sessions.get(sessionId) : undefined;
+    if (!sessionId || !deleteEntry) {
       res.status(400).json({
         jsonrpc: "2.0",
         error: {
@@ -220,8 +282,9 @@ async function main(): Promise<void> {
       });
       return;
     }
+    touchSession(sessionId);
     try {
-      await transports[sessionId].handleRequest(req, res);
+      await deleteEntry.transport.handleRequest(req, res);
     } catch (error) {
       console.error("Error handling session termination:", error);
       if (!res.headersSent) {
@@ -276,6 +339,15 @@ async function main(): Promise<void> {
         `Built-in tools: ${[...config.enabledToolGroups].sort().join(", ")}`,
       );
     }
+    if (config.sessionIdleTtlMs > 0) {
+      console.log(
+        `Session idle TTL: ${config.sessionIdleTtlMs} ms (no /mcp traffic evicts; CONNECTOR_SESSION_IDLE_MS=0 to disable)`,
+      );
+    } else {
+      console.log(
+        "Session idle TTL: disabled (CONNECTOR_SESSION_IDLE_MS=0; sessions only removed on transport close)",
+      );
+    }
     if (connectorDebugEnabled()) {
       console.log(
         "CONNECTOR_DEBUG: MCP requests, responses (SSE/JSON), and terminal_exec → stderr" +
@@ -306,10 +378,15 @@ async function main(): Promise<void> {
     beginShutdown();
     await waitForPendingOperations(SHUTDOWN_DRAIN_MS);
 
-    for (const sessionId of Object.keys(transports)) {
+    if (idleSweepTimer !== undefined) {
+      clearInterval(idleSweepTimer);
+      idleSweepTimer = undefined;
+    }
+
+    for (const [sessionId, entry] of sessions) {
       try {
-        await transports[sessionId].close();
-        delete transports[sessionId];
+        await entry.transport.close();
+        sessions.delete(sessionId);
       } catch (error) {
         console.error(`Error closing session ${sessionId}:`, error);
       }

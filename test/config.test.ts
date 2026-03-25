@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { parseSessionIdleTtlMs } from "../src/config.js";
 import { parseConnectorToolsEnv } from "../src/tool-groups.js";
 
 describe("parseConnectorToolsEnv", () => {
@@ -52,5 +53,27 @@ describe("parseConnectorToolsEnv", () => {
 
   it("rejects unknown tokens", () => {
     expect(() => parseConnectorToolsEnv("screenshot,typo")).toThrow(/unknown/);
+  });
+});
+
+describe("parseSessionIdleTtlMs", () => {
+  it("defaults to 1 hour when unset or empty", () => {
+    expect(parseSessionIdleTtlMs(undefined)).toBe(3_600_000);
+    expect(parseSessionIdleTtlMs("")).toBe(3_600_000);
+    expect(parseSessionIdleTtlMs("   ")).toBe(3_600_000);
+  });
+
+  it("allows 0 to disable idle eviction", () => {
+    expect(parseSessionIdleTtlMs("0")).toBe(0);
+  });
+
+  it("parses positive milliseconds", () => {
+    expect(parseSessionIdleTtlMs("300000")).toBe(300_000);
+    expect(parseSessionIdleTtlMs(" 60000 ")).toBe(60_000);
+  });
+
+  it("rejects negative or non-numeric values", () => {
+    expect(() => parseSessionIdleTtlMs("-1")).toThrow(/non-negative/);
+    expect(() => parseSessionIdleTtlMs("nope")).toThrow(/non-negative/);
   });
 });
