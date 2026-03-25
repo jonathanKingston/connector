@@ -4,6 +4,7 @@
 
 import { connectorDebug } from "../debug.js";
 import { exec } from "../helpers/exec.js";
+import { getShutdownAbortSignal } from "../shutdown.js";
 import type { TerminalExecOptions, TerminalExecResult } from "./types.js";
 
 const BASH_PATH = "/bin/bash";
@@ -29,6 +30,7 @@ export async function terminalExec(
     BASH_PATH,
     ["-lc", `${STRICT_SHELL_PREFIX}${command}`],
     timeoutMs,
+    { signal: getShutdownAbortSignal() },
   );
 
   connectorDebug("terminalExec done", {
