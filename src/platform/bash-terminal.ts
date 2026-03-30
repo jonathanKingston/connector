@@ -5,11 +5,14 @@
 import { connectorDebug } from "../debug.js";
 import { exec } from "../helpers/exec.js";
 import { getShutdownAbortSignal } from "../shutdown.js";
-import type { TerminalExecOptions, TerminalExecResult } from "./types.js";
+import {
+  DEFAULT_TERMINAL_TIMEOUT_MS,
+  type TerminalExecOptions,
+  type TerminalExecResult,
+} from "./types.js";
 
 const BASH_PATH = "/bin/bash";
 const STRICT_SHELL_PREFIX = "set -euo pipefail; ";
-const DEFAULT_TERMINAL_TIMEOUT_MS = 60_000;
 
 export async function terminalExec(
   options: TerminalExecOptions,
