@@ -12,6 +12,11 @@ export interface Config {
   password: string | undefined;
   /** Optional external modules that register setup-specific tools. */
   toolModules: string[];
+  /**
+   * When false (default), only one MCP session may be active at a time.
+   * Set CONNECTOR_ALLOW_MULTIPLE_CLIENTS=1 to allow concurrent sessions.
+   */
+  allowMultipleClients: boolean;
 }
 
 export function loadConfig(): Config {
@@ -31,5 +36,9 @@ export function loadConfig(): Config {
 
   const host = process.env.CONNECTOR_HOST ?? "0.0.0.0";
 
-  return { port, host, password, toolModules };
+  const allowMultipleClients =
+    process.env.CONNECTOR_ALLOW_MULTIPLE_CLIENTS === "1" ||
+    process.env.CONNECTOR_ALLOW_MULTIPLE_CLIENTS === "true";
+
+  return { port, host, password, toolModules, allowMultipleClients };
 }

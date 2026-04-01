@@ -60,6 +60,8 @@ async function main(): Promise<void> {
 
   // Session management: map session IDs to their transports
   const transports: Record<string, StreamableHTTPServerTransport> = {};
+  /** Blocks concurrent initialize while the first request is still creating a session. */
+  let pendingInitialize = false;
 
   // ── Apply auth middleware to /mcp if password is configured ──────────
 
@@ -88,27 +90,53 @@ async function main(): Promise<void> {
       }
 
       if (!sessionId && isInitializeRequest(req.body)) {
-        // New session — create a fresh McpServer + transport pair.
-        // Each session gets its own McpServer because connect() binds
-        // exclusively to one transport.
-        const mcpServer = factory.createServer();
-
-        const transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => randomUUID(),
-          onsessioninitialized: (newSessionId: string) => {
-            transports[newSessionId] = transport;
-          },
-        });
-
-        transport.onclose = () => {
-          const sid = transport.sessionId;
-          if (sid && transports[sid]) {
-            delete transports[sid];
+        if (!config.allowMultipleClients) {
+          if (
+            Object.keys(transports).length > 0 ||
+            pendingInitialize
+          ) {
+            res.status(503).json({
+              jsonrpc: "2.0",
+              error: {
+                code: -32000,
+                message:
+                  "Service Unavailable: Connector already has an active MCP session. " +
+                  "Disconnect the other client or set CONNECTOR_ALLOW_MULTIPLE_CLIENTS=1.",
+              },
+              id: null,
+            });
+            return;
           }
-        };
+          pendingInitialize = true;
+        }
 
-        await mcpServer.connect(transport);
-        await transport.handleRequest(req, res, req.body);
+        try {
+          // New session — create a fresh McpServer + transport pair.
+          // Each session gets its own McpServer because connect() binds
+          // exclusively to one transport.
+          const mcpServer = factory.createServer();
+
+          const transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => randomUUID(),
+            onsessioninitialized: (newSessionId: string) => {
+              transports[newSessionId] = transport;
+            },
+          });
+
+          transport.onclose = () => {
+            const sid = transport.sessionId;
+            if (sid && transports[sid]) {
+              delete transports[sid];
+            }
+          };
+
+          await mcpServer.connect(transport);
+          await transport.handleRequest(req, res, req.body);
+        } finally {
+          if (!config.allowMultipleClients) {
+            pendingInitialize = false;
+          }
+        }
         return;
       }
 
@@ -214,6 +242,13 @@ async function main(): Promise<void> {
     if (config.toolModules.length > 0) {
       console.log(
         `External tool modules loaded: ${config.toolModules.join(", ")}`,
+      );
+    }
+    if (config.allowMultipleClients) {
+      console.log("Sessions: multiple concurrent clients allowed");
+    } else {
+      console.log(
+        "Sessions: single client only (set CONNECTOR_ALLOW_MULTIPLE_CLIENTS=1 to allow more)",
       );
     }
   });
