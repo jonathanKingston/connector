@@ -27,12 +27,12 @@ describe("createPlatformAdapter", () => {
     expect(adapter.capabilities.screenshot).toBe(true);
   });
 
-  it("returns windows terminal adapter on win32", async () => {
+  it("returns windows adapter on win32", async () => {
     const { createPlatformAdapter } = await import("../../src/platform/factory.js");
     const adapter = await createPlatformAdapter("win32");
 
     expect(adapter.capabilities).toEqual({
-      screenshot: false,
+      screenshot: true,
       mouse: false,
       keyboard: false,
       accessibility: false,

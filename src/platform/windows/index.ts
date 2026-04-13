@@ -1,8 +1,7 @@
 /**
- * Windows terminal-only platform adapter.
+ * Windows platform adapter — screenshot (GDI+) and terminal (PowerShell).
  *
- * Exposes terminal_exec via PowerShell and disables GUI-only operations (same surface
- * as Linux terminal-only mode).
+ * Mouse, keyboard, accessibility, and application tools are not implemented.
  */
 
 import type {
@@ -21,10 +20,11 @@ import type {
   TerminalExecOptions,
   TerminalExecResult,
 } from "../types.js";
+import { captureScreen } from "./screenshot.js";
 import { terminalExec } from "./terminal.js";
 
-const WINDOWS_TERMINAL_CAPABILITIES: PlatformCapabilities = {
-  screenshot: false,
+const WINDOWS_CAPABILITIES: PlatformCapabilities = {
+  screenshot: true,
   mouse: false,
   keyboard: false,
   accessibility: false,
@@ -32,18 +32,18 @@ const WINDOWS_TERMINAL_CAPABILITIES: PlatformCapabilities = {
   terminal: true,
 };
 
-const TERMINAL_ONLY_ERROR =
-  "This operation requires GUI automation and is not available on Windows in this build. Only terminal_exec is supported.";
+const UNSUPPORTED_GUI_ERROR =
+  "This operation is not implemented on Windows (screenshot and terminal_exec are supported).";
 
 function unsupportedGuiOperation(): never {
-  throw new Error(TERMINAL_ONLY_ERROR);
+  throw new Error(UNSUPPORTED_GUI_ERROR);
 }
 
-export class WindowsTerminalAdapter implements PlatformAdapter {
-  readonly capabilities = WINDOWS_TERMINAL_CAPABILITIES;
+export class WindowsAdapter implements PlatformAdapter {
+  readonly capabilities = WINDOWS_CAPABILITIES;
 
-  async captureScreen(_displayId?: number): Promise<ScreenshotResult> {
-    unsupportedGuiOperation();
+  async captureScreen(displayId?: number): Promise<ScreenshotResult> {
+    return captureScreen(displayId);
   }
 
   async mouseClick(_options: MouseClickOptions): Promise<void> {

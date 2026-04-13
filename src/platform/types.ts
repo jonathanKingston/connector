@@ -1,8 +1,8 @@
 /**
  * Platform abstraction layer — defines interfaces that each OS adapter must implement.
  *
- * macOS provides the full GUI surface; Linux and Windows ship as terminal-only
- * adapters until/unless GUI automation is implemented there.
+ * macOS provides the full GUI surface; Linux is terminal-only; Windows supports
+ * screenshot + terminal only (no mouse/keyboard/UIA in this codebase).
  */
 
 // ── Screen ──────────────────────────────────────────────────────────────────

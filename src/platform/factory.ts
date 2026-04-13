@@ -18,8 +18,8 @@ export async function createPlatformAdapter(
       return new LinuxTerminalAdapter();
     }
     case "win32": {
-      const { WindowsTerminalAdapter } = await import("./windows/index.js");
-      return new WindowsTerminalAdapter();
+      const { WindowsAdapter } = await import("./windows/index.js");
+      return new WindowsAdapter();
     }
     default:
       throw new Error(

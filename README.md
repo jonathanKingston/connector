@@ -31,7 +31,7 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
 The server runs on the target machine and uses a **platform adapter pattern**:
 - **macOS:** screenshot/mouse/keyboard/accessibility/application tools and `terminal_exec`
 - **Linux (terminal-only mode):** `terminal_exec` only (no GUI tools)
-- **Windows (terminal-only mode):** `terminal_exec` via PowerShell (no GUI tools)
+- **Windows:** `screenshot` (GDI+ primary / numbered display) and `terminal_exec` via PowerShell (no mouse, keyboard, accessibility, or app tools)
 
 ## Prerequisites
 
@@ -39,7 +39,7 @@ The server runs on the target machine and uses a **platform adapter pattern**:
 - One of:
   - **macOS** with Accessibility permissions (for GUI tools); `terminal_exec` uses `/bin/bash`
   - **Linux terminal-only host** (for `terminal_exec` via bash)
-  - **Windows** with PowerShell 5.1+ (`powershell.exe` on `PATH`); `terminal_exec` runs commands in a strict PowerShell session (GUI tools are not available)
+  - **Windows** with PowerShell 5.1+ and **.NET GDI+** (`System.Drawing` — standard on desktop Windows); `screenshot` uses the interactive session’s display; `terminal_exec` runs in a strict PowerShell session
 - For macOS GUI tools: grant Terminal (or whichever app runs the server) access in System Settings → Privacy & Security → Accessibility
 
 ## Quick Start
@@ -146,8 +146,10 @@ src/
 │   │   ├── index.ts            # Linux terminal-only adapter
 │   │   └── terminal.ts         # Re-export bash execution
 │   ├── windows/
-│   │   ├── index.ts            # Windows terminal-only adapter
-│   │   └── terminal.ts         # PowerShell execution
+│   │   ├── index.ts            # Windows adapter (screenshot + terminal)
+│   │   ├── powershell-run.ts   # Shared strict PowerShell invocation
+│   │   ├── screenshot.ts       # GDI+ screen capture → PNG
+│   │   └── terminal.ts         # PowerShell terminal_exec
 │   └── macos/
 │       ├── index.ts            # MacOSAdapter class
 │       ├── screenshot.ts       # screencapture CLI wrapper
