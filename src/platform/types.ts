@@ -1,8 +1,8 @@
 /**
  * Platform abstraction layer — defines interfaces that each OS adapter must implement.
  *
- * macOS is the first target. Windows and Linux adapters can be added by implementing
- * the PlatformAdapter interface without changing any tool or server code.
+ * macOS provides the full GUI surface; Linux and Windows ship as terminal-only
+ * adapters until/unless GUI automation is implemented there.
  */
 
 // ── Screen ──────────────────────────────────────────────────────────────────

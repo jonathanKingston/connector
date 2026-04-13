@@ -17,9 +17,13 @@ export async function createPlatformAdapter(
       const { LinuxTerminalAdapter } = await import("./linux/index.js");
       return new LinuxTerminalAdapter();
     }
+    case "win32": {
+      const { WindowsTerminalAdapter } = await import("./windows/index.js");
+      return new WindowsTerminalAdapter();
+    }
     default:
       throw new Error(
-        `Platform "${platform}" is not yet supported. Connector currently supports: darwin (macOS GUI), linux (terminal-only).`,
+        `Platform "${platform}" is not yet supported. Connector currently supports: darwin (macOS GUI), linux (terminal-only), win32 (Windows terminal-only).`,
       );
   }
 }
