@@ -33,6 +33,9 @@ The server runs on the target machine and uses a **platform adapter pattern**:
 - **Linux (terminal-only mode):** `terminal_exec` only (no GUI tools)
 - **Windows:** `screenshot` (GDI+ primary / numbered display) and `terminal_exec` via PowerShell (no mouse, keyboard, accessibility, or app tools)
 
+For the current Windows limitations and a restart-oriented handoff note, see
+[`WINDOWS_AGENT_HANDOFF.md`](./WINDOWS_AGENT_HANDOFF.md).
+
 ## Prerequisites
 
 - **Node.js** 20 or later
@@ -118,6 +121,16 @@ npm run test:watch
 # Build
 npm run build
 ```
+
+## Windows follow-up work
+
+If you are using Connector for Windows GUI automation, read
+[`WINDOWS_AGENT_HANDOFF.md`](./WINDOWS_AGENT_HANDOFF.md) first. It captures:
+
+- the currently missing Windows capabilities
+- the concrete blockers hit during browser-driven validation
+- suggested core connector work
+- suggested `CONNECTOR_TOOL_MODULES` resources for a follow-up agent
 
 ## Project Structure
 
