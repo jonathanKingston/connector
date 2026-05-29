@@ -127,10 +127,9 @@ npm run build
 If you are using Connector for Windows GUI automation, read
 [`WINDOWS_AGENT_HANDOFF.md`](./WINDOWS_AGENT_HANDOFF.md) first. It captures:
 
-- the currently missing Windows capabilities
-- the concrete blockers hit during browser-driven validation
-- suggested core connector work
-- suggested `CONNECTOR_TOOL_MODULES` resources for a follow-up agent
+- the currently missing Windows capabilities (mouse, keyboard, windows, UIA)
+- suggested core connector work in priority order
+- guidance on what belongs in core vs. `CONNECTOR_TOOL_MODULES`
 
 ## Project Structure
 
