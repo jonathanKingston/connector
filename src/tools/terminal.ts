@@ -1,5 +1,5 @@
 /**
- * Terminal tools for headless Linux environments.
+ * Terminal tools for hosts that expose shell execution (macOS, Linux, Windows).
  */
 
 import { z } from "zod";
@@ -17,7 +17,7 @@ export function registerTerminalTools(
 ): void {
   server.tool(
     "terminal_exec",
-    "Execute a shell command on the host machine via bash (set -euo pipefail). Available on macOS and Linux terminal-capable adapters.",
+    "Execute a shell command on the host: bash with set -euo pipefail on macOS/Linux, Windows PowerShell with strict errors on win32. Available when the platform adapter exposes terminal capability.",
     {
       command: z.string().min(1).describe("Shell command to execute"),
       timeoutMs: z

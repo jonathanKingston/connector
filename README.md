@@ -11,7 +11,7 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
 | **Keyboard** | `keyboard_type`, `keyboard_key` | Type text and press keys with modifiers |
 | **Accessibility** | `get_accessibility_tree`, `get_menu_bar`, `click_menu_item` | Inspect UI hierarchy, menus, and click menu items |
 | **Applications** | `list_applications`, `list_windows`, `activate_application` | List running apps/windows and bring apps to foreground |
-| **Terminal** | `terminal_exec` | Execute shell commands via bash (macOS and Linux) |
+| **Terminal** | `terminal_exec` | Execute shell commands (bash on macOS/Linux, PowerShell on Windows) |
 
 ## Architecture
 
@@ -31,13 +31,18 @@ An MCP (Model Context Protocol) server for remote machine control. Allows an AI 
 The server runs on the target machine and uses a **platform adapter pattern**:
 - **macOS:** screenshot/mouse/keyboard/accessibility/application tools and `terminal_exec`
 - **Linux (terminal-only mode):** `terminal_exec` only (no GUI tools)
+- **Windows:** `screenshot` (GDI+ primary / numbered display) and `terminal_exec` via PowerShell (no mouse, keyboard, accessibility, or app tools)
+
+For the current Windows limitations and a restart-oriented handoff note, see
+[`WINDOWS_AGENT_HANDOFF.md`](./WINDOWS_AGENT_HANDOFF.md).
 
 ## Prerequisites
 
 - **Node.js** 20 or later
 - One of:
   - **macOS** with Accessibility permissions (for GUI tools); `terminal_exec` uses `/bin/bash`
-  - **Linux terminal-only host** (for `terminal_exec` when not on macOS)
+  - **Linux terminal-only host** (for `terminal_exec` via bash)
+  - **Windows** with PowerShell 5.1+ and **.NET GDI+** (`System.Drawing` — standard on desktop Windows); `screenshot` uses the interactive session’s display; `terminal_exec` runs in a strict PowerShell session
 - For macOS GUI tools: grant Terminal (or whichever app runs the server) access in System Settings → Privacy & Security → Accessibility
 
 ## Quick Start
@@ -117,6 +122,15 @@ npm run test:watch
 npm run build
 ```
 
+## Windows follow-up work
+
+If you are using Connector for Windows GUI automation, read
+[`WINDOWS_AGENT_HANDOFF.md`](./WINDOWS_AGENT_HANDOFF.md) first. It captures:
+
+- the currently missing Windows capabilities (mouse, keyboard, windows, UIA)
+- suggested core connector work in priority order
+- guidance on what belongs in core vs. `CONNECTOR_TOOL_MODULES`
+
 ## Project Structure
 
 ```
@@ -143,6 +157,11 @@ src/
 │   ├── linux/
 │   │   ├── index.ts            # Linux terminal-only adapter
 │   │   └── terminal.ts         # Re-export bash execution
+│   ├── windows/
+│   │   ├── index.ts            # Windows adapter (screenshot + terminal)
+│   │   ├── powershell-run.ts   # Shared strict PowerShell invocation
+│   │   ├── screenshot.ts       # GDI+ screen capture → PNG
+│   │   └── terminal.ts         # PowerShell terminal_exec
 │   └── macos/
 │       ├── index.ts            # MacOSAdapter class
 │       ├── screenshot.ts       # screencapture CLI wrapper
@@ -249,7 +268,7 @@ Bring an application to the foreground.
 
 ### terminal_exec
 
-Execute a shell command on the host via `/bin/bash` with `set -euo pipefail` (macOS and Linux adapters).
+Execute a shell command on the host: **macOS and Linux** use `/bin/bash` with `set -euo pipefail`. **Windows** uses `powershell.exe` with `$ErrorActionPreference = 'Stop'` (commands are PowerShell, not POSIX shell).
 
 **Parameters:**
 - `command` (string) — Shell command to run
